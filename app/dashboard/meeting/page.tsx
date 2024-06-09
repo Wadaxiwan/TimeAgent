@@ -6,8 +6,13 @@ import { lusitana } from '@/app/ui/fonts';
 import { MeetingsTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchMeetingsPages } from '@/app/lib/data';
+import { MetaData } from '@lobehub/ui';
 
- 
+
+export const metadata: MetaData = {
+  title: 'Meetings',
+};
+
 export default async function Page({
     searchParams,
   }: {

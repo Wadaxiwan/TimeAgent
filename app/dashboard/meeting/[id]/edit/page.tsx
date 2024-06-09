@@ -2,7 +2,12 @@ import Form from '@/app/ui/meeting/edit-form';
 import Breadcrumbs from '@/app/ui/meeting/breadcrumbs';
 import { fetchFilteredUsers, fetchMeetingById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
- 
+import { MetaData } from '@lobehub/ui';
+
+
+export const metadata: MetaData = {
+  title: 'Edit Meeting',
+};
  
 export default async function Page({ params }: { params: { id: string } }) {
     const meeting_id = params.id;  

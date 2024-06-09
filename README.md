@@ -2,6 +2,8 @@
 You should first enter the project directory and then run the following command to get the dependencies:
 ```bash
 npm install
+npm install --save-dev @types/react-calendar
+
 ```
 
 ## Run

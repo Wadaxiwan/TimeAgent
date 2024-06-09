@@ -1,0 +1,38 @@
+.calendar-page {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.event-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.event-form .input {
+    margin-right: 10px;
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.event-form .btn {
+    padding: 5px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.event {
+    background-color: #f9f9a9;
+    margin-top: 5px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 14px;
+}

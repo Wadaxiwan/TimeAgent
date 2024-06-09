@@ -1,6 +1,13 @@
 import AcmeLogo from '@/app/ui/acme-logo';
 import LoginForm from '@/app/ui/login-form';
+import { MetaData } from '@lobehub/ui';
  
+
+export const metadata: MetaData = {
+  title: 'Login in | Time Agent',
+};
+
+
 export default function LoginPage() {
   return (
     <main className="flex items-center justify-center md:h-screen">

@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs/promises';
 import { Meeting } from './definitions';
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
 const { exec } = require('child_process');
 
 export type State = {
@@ -212,4 +214,23 @@ export async function deleteTodo(id: any) {
     DELETE FROM todos
     WHERE id = ${id}
   `;
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error;
+  }
 }

@@ -1,3 +1,39 @@
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.calendar-day {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    font-size: 15px;
+    height: 92px;
+    overflow: hidden;
+}
+
+.todo {
+    background-color: #faf7de;
+    color: #333;
+    padding: 5px;
+    margin: 2px 0;
+    border-radius: 4px;
+}
+
+.modal-content .todo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    margin: 5px 0;
+    border-radius: 4px;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+
 .calendar-page {
     text-align: center;
     font-family: Arial, sans-serif;
@@ -11,39 +47,9 @@
     margin: 20px 0;
 }
 
-.calendar-controls button {
-    padding: 10px 20px;
-    border: none;
-    background-color: #444;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.calendar-controls button:hover {
-    background-color: #111;
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-    margin-top: 20px;
-}
-
 .calendar-header {
     text-align: center;
     font-weight: bold;
-}
-
-.calendar-day {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-    position: relative;
-    font-size: 15px;
-    height: 92px;
-    overflow: hidden;
 }
 
 .event {
@@ -65,21 +71,9 @@
 .event-form input {
     padding: 10px;
     border: 1px solid #ccc;
-    width: 45%;
+    width: 40%;
 }
 
-.event-form button {
-    padding: 10px;
-    border: none;
-    background-color: #444;
-    color: white;
-    border-radius: 0% 30% 30% 0;
-    cursor: pointer;
-}
-
-.event-form button:hover {
-    background-color: #111;
-}
 
 .modal {
     display: none;
@@ -101,6 +95,7 @@
     width: 80%;
     max-width: 600px;
     border-radius: 8px;
+    position: relative;
 }
 
 .modal label {
@@ -112,6 +107,19 @@
     width: calc(100% - 20px);
     padding: 10px;
     margin: 5px 0;
+}
+
+.modal-content .event {
+    background-color: #faf7de;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    margin: 5px 0;
+    border-radius: 4px;
+    min-width: 100%; /* 确保事件占据整个 modal 的宽度 */
+    box-sizing: border-box; /* 包括内边距和边框在内的宽度计算 */
 }
 
 .close {

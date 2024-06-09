@@ -44,6 +44,43 @@ async function seedUsers(client) {
   }
 }
 
+async function seedTodos(client) {
+  try {
+    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    const createTable = await client.sql`
+    CREATE TABLE IF NOT EXISTS todos (
+      todo_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      user_id UUID NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      date DATE NOT NULL,
+      status VARCHAR(255) NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )`;
+    console.log(`Created "todos" table`);
+
+    const insertedTodos = await Promise.all(
+      todos.map((todo) => {
+        todo.todo_id = uuidv4();
+        return client.sql`
+          INSERT INTO todos (todo_id, user_id, title, date, status)
+          VALUES (${todo.todo_id}, ${todo.user_id}, ${todo.title}, ${todo.date}, ${todo.status})
+          ON CONFLICT (todo_id) DO NOTHING;
+          `;         
+      }),
+    );
+
+    console.log(`Seeded ${insertedTodos.length} todos`);
+
+    return {
+      createTable,
+      todos: insertedTodos,
+    };
+  } catch (error) {
+    console.error('Error seeding todos:', error);
+    throw error;
+  }
+}
+
 async function seedMeetings(client) {
   try {
     await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -89,6 +126,7 @@ async function main() {
   const client = await db.connect();
   
   // await seedUsers(client);
+  await seedTodos(client);
   await seedMeetings(client);
 
   await client.end();

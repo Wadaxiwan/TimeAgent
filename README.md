@@ -1,5 +1,16 @@
-## Next.js App Router Course - Starter
+## Build
+You should first enter the project directory and then run the following command to get the dependencies:
+```bash
+npm install
+```
 
-This is the starter template for the Next.js App Router Course. It contains the starting code for the dashboard application.
+## Run
+Then you can run the project with the following command:
+```bash
+npm run dev
+```
 
-For more information, see the [course curriculum](https://nextjs.org/learn) on the Next.js Website.
+## Reference 
+- [Next.js Guide](https://nextjs.org/learn)
+- [Next.js](https://nextjs.org/)
+- [React](https://reactjs.org/)

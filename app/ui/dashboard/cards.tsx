@@ -3,29 +3,25 @@ import {
   ClockIcon,
   UserGroupIcon,
   InboxIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
+import { fetchCardData } from '@/app/lib/data';
 
 const iconMap = {
-  collected: BanknotesIcon,
-  customers: UserGroupIcon,
-  pending: ClockIcon,
-  invoices: InboxIcon,
+  todo: PencilIcon,
+  meeting: UserGroupIcon,
 };
 
 export default async function CardWrapper() {
+  const {totalTodoLists, scheduledMeetings, summariedMeetings, totalMeetings} = await fetchCardData();
   return (
     <>
       {/* NOTE: comment in this code when you get to this point in the course */}
-
-      {/* <Card title="Collected" value={totalPaidInvoices} type="collected" />
-      <Card title="Pending" value={totalPendingInvoices} type="pending" />
-      <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-      <Card
-        title="Total Customers"
-        value={numberOfCustomers}
-        type="customers"
-      /> */}
+      {<Card title="Todo" value={totalTodoLists} type="todo" />}
+      {<Card title="Scheduled Meetings" value={scheduledMeetings} type="meeting" />}
+      {<Card title="Summarized Meetings" value={summariedMeetings} type="meeting" />}
+      {<Card title="Total Meetings" value={totalMeetings} type="meeting"/>} 
     </>
   );
 }
@@ -37,7 +33,7 @@ export function Card({
 }: {
   title: string;
   value: number | string;
-  type: 'invoices' | 'customers' | 'pending' | 'collected';
+  type: 'todo' | 'meeting';
 }) {
   const Icon = iconMap[type];
 

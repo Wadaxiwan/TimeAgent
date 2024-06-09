@@ -2,6 +2,18 @@
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
+export type Meeting = {
+  user_id: string;
+  meeting_id: string;
+  title: string;
+  date: string;
+  status: 'scheduled' | 'completed' | 'summary';
+  meeting_content: string;
+  meeting_summary: string;
+  meeting_summary_content: string;
+}
+
+
 export type User = {
   id: string;
   name: string;

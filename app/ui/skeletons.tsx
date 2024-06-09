@@ -29,6 +29,58 @@ export function CardsSkeleton() {
   );
 }
 
+export function MeetingsSkeleton() {
+  return (
+    <div className={`${shimmer} relative w-full overflow-hidden md:col-span-4`}>
+      <div className="mb-4 h-8 w-36 rounded-md bg-gray-100" />
+      <div className="flex grow flex-col justify-between rounded-xl bg-gray-100 p-4">
+        <div className="bg-white px-6">
+          <div className="flex flex-row items-center justify-between py-4">
+            <div className="flex flex-col">
+              <div className="h-6 w-24 rounded-md bg-gray-200" />
+            </div>
+            <div className="flex flex-row items-center space-x-4">
+              <div className="flex items-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-200 mr-2" />
+                <div className="h-6 w-24 rounded-md bg-gray-200" />
+              </div>
+              <div className="h-6 w-24 rounded-md bg-gray-200" />
+            </div>
+          </div>
+          <div className="flex flex-row items-center justify-between py-4">
+            <div className="flex flex-col">
+              <div className="h-6 w-24 rounded-md bg-gray-200" />
+            </div>
+            <div className="flex flex-row items-center space-x-4">
+              <div className="flex items-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-200 mr-2" />
+                <div className="h-6 w-24 rounded-md bg-gray-200" />
+              </div>
+              <div className="h-6 w-24 rounded-md bg-gray-200" />
+            </div>
+          </div>
+          <div className="flex flex-row items-center justify-between py-4">
+            <div className="flex flex-col">
+              <div className="h-6 w-24 rounded-md bg-gray-200" />
+            </div>
+            <div className="flex flex-row items-center space-x-4">
+              <div className="flex items-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-200 mr-2" />
+                <div className="h-6 w-24 rounded-md bg-gray-200" />
+              </div>
+              <div className="h-6 w-24 rounded-md bg-gray-200" />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center pb-2 pt-6">
+          <div className="h-5 w-5 rounded-full bg-gray-200" />
+          <div className="ml-2 h-4 w-20 rounded-md bg-gray-200" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function RevenueChartSkeleton() {
   return (
     <div className={`${shimmer} relative w-full overflow-hidden md:col-span-4`}>
@@ -95,8 +147,7 @@ export default function DashboardSkeleton() {
         <CardSkeleton />
       </div>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        <RevenueChartSkeleton />
-        <LatestInvoicesSkeleton />
+        <MeetingsSkeleton />
       </div>
     </>
   );
@@ -163,30 +214,28 @@ export function InvoicesMobileSkeleton() {
   );
 }
 
-export function InvoicesTableSkeleton() {
+export function MeetingsTableSkeleton() {
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">
-            <InvoicesMobileSkeleton />
-            <InvoicesMobileSkeleton />
-            <InvoicesMobileSkeleton />
-            <InvoicesMobileSkeleton />
-            <InvoicesMobileSkeleton />
-            <InvoicesMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
+            <MeetingMobileSkeleton />
           </div>
           <table className="hidden min-w-full text-gray-900 md:table">
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Customer
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Email
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Amount
+                  Title
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Date
@@ -194,25 +243,71 @@ export function InvoicesTableSkeleton() {
                 <th scope="col" className="px-3 py-5 font-medium">
                   Status
                 </th>
-                <th
-                  scope="col"
-                  className="relative pb-4 pl-3 pr-6 pt-2 sm:pr-6"
-                >
+                <th scope="col" className="px-3 py-5 font-medium">
+                  summary
+                </th>
+                <th scope="col" className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white">
-              <TableRowSkeleton />
-              <TableRowSkeleton />
-              <TableRowSkeleton />
-              <TableRowSkeleton />
-              <TableRowSkeleton />
-              <TableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
+              <MeetingTableRowSkeleton />
             </tbody>
           </table>
         </div>
       </div>
     </div>
+  );
+}
+
+function MeetingMobileSkeleton() {
+  return (
+    <div className="mb-2 w-full animate-pulse rounded-md bg-white p-4">
+      <div className="flex items-center justify-between border-b pb-4">
+        <div className="flex-1 space-y-4 py-1">
+          <div className="h-4 w-3/4 rounded bg-gray-200"></div>
+          <div className="h-4 w-1/2 rounded bg-gray-200"></div>
+        </div>
+        <div className="h-4 w-16 rounded bg-gray-200"></div>
+      </div>
+      <div className="pt-4">
+        <div className="h-4 w-full rounded bg-gray-200"></div>
+      </div>
+    </div>
+  );
+}
+
+function MeetingTableRowSkeleton() {
+  return (
+    <tr className="w-full animate-pulse border-b py-3 text-sm last-of-type:border-none">
+      <td className="whitespace-nowrap py-3 pl-6 pr-3">
+        <div className="h-4 w-3/4 rounded bg-gray-200"></div>
+      </td>
+      <td className="whitespace-nowrap px-3 py-3">
+        <div className="h-4 w-24 rounded bg-gray-200"></div>
+      </td>
+      <td className="whitespace-nowrap px-3 py-3">
+        <div className="h-4 w-16 rounded bg-gray-200"></div>
+      </td>
+      <td className="whitespace-nowrap px-3 py-3">
+        <div className="h-4 w-32 rounded bg-gray-200"></div>
+      </td>
+      <td className="whitespace-nowrap py-3 pl-6 pr-3">
+        <div className="flex justify-end gap-3">
+          <div className="h-8 w-8 rounded bg-gray-200"></div>
+          <div className="h-8 w-8 rounded bg-gray-200"></div>
+        </div>
+      </td>
+    </tr>
   );
 }

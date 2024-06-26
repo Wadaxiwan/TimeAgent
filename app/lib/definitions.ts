@@ -21,6 +21,13 @@ export type User = {
   password: string;
 };
 
+export type TODO = {
+  TODOid: string;
+  content: string;
+  date:string;
+  status: 'completed' | 'scheduled';
+}
+
 export type Customer = {
   id: string;
   name: string;

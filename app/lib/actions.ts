@@ -76,6 +76,44 @@ export async function createMeeting(prevState: State, formData: FormData) {
   redirect('/dashboard/meeting');
 }
 
+export async function createTODO(prevState: State, formData: FormData) {
+
+  const validatedFields = CreateMeeting.safeParse({
+    userId: formData.get('userId'),
+    title: formData.get('title'),
+    meetingContent: formData.get('meetingContent') || '',
+    meetingSummary: formData.get('meetingSummary') || '',
+    status: formData.get('status'),
+    date: formData.get('date'),
+  });
+  
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Meeting.',
+    };
+  }
+
+  const meeting_id = uuidv4(); // 生成唯一的会议 ID
+
+  const { userId, title, meetingContent, meetingSummary, status, date } = validatedFields.data;
+
+  try {
+    const data = await sql<Meeting>`
+      INSERT INTO meetings (meeting_id, user_id, title, status, date)
+      VALUES (${meeting_id}, ${userId}, ${title}, ${status}, ${date})
+      RETURNING *
+    `;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to create todo.');
+  }
+
+  revalidatePath('/dashboard/todo');
+  redirect('/dashboard/todo');
+}
+
 
 const UpdateMeeting = FormSchema.omit({ id: true, date: true });
 
@@ -120,6 +158,22 @@ export async function updateMeeting(id: string, formData: FormData) {
 
   revalidatePath('/dashboard/meeting');
   redirect('/dashboard/meeting');
+}
+
+export async function deleteTODO(id: string) {
+  try {
+
+    const result = await sql`
+      DELETE FROM meetings
+      WHERE meeting_id = ${id}
+    `;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to delete todo.');
+  }
+  
+  revalidatePath('/dashboard/todo');
 }
 
 export async function deleteMeeting(id: string) {
@@ -170,6 +224,37 @@ export async function generateSummary(content: string, meeting_id: string) {
 
 }
 
+export async function getCorrectionAdvice(content: string, meeting_id: string) {
+  const contentDir = path.join(process.cwd(), 'public', 'contents');
+  const contentPath = path.join(contentDir, `${meeting_id}_content.txt`);
+
+  await fs.mkdir(contentDir, { recursive: true });
+  await fs.writeFile(contentPath, content, 'utf8');
+
+  const correctionDir = path.join(process.cwd(), 'public', 'correction');
+  await fs.mkdir(correctionDir, { recursive: true });
+  
+  const correctionPath = path.join(correctionDir, `${meeting_id}_correction.json`);
+
+  return new Promise((resolve, reject) => {
+    exec(`python module/docCorrection/TextCorrection.py --in_path ${contentPath} --out_path ${correctionPath}`, async (error: any, stdout: any, stderr: any) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        reject(`exec error: ${error}`);
+        return;
+      }
+
+      try {
+        const summary = await fs.readFile(correctionPath, 'utf8');
+        resolve({ summary });
+      } catch (readError) {
+        reject(`read error: ${readError}`);
+      }
+    });
+  });
+
+}
+
 
 export async function fetchContent(meeting_id: string, type: string) {
 
@@ -178,6 +263,8 @@ export async function fetchContent(meeting_id: string, type: string) {
     filePath = path.join(process.cwd(), 'public', type, `${meeting_id}_content.txt`);
   } else if('summaries' === type) {
     filePath = path.join(process.cwd(), 'public', type, `${meeting_id}_summary.txt`);
+  }else if('correction' === type) {
+    filePath = path.join(process.cwd(), 'public', type, `${meeting_id}_correction.json`);
   }
 
   try {

@@ -6,6 +6,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { PreviousMonthButton, NextMonthButton, AddEventButton } from '@/app/ui/calendar/buttons';
 import { Todo, fetchTodos, createOrUpdateTodo, deleteTodo } from '@/app/lib/actions';
 import CalendarSkeleton from '@/app/ui/calendar/skeletons';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 const CalendarPage = () => {
     const [todos, setTodos] = useState<Todo[] | null>(null);
@@ -151,24 +152,36 @@ const CalendarPage = () => {
                 todoNameText.textContent = todo.title;
                 todoNameText.style.textAlign = 'left';
                 todoNameText.style.flexGrow = '1';
+                
+                // 创建删除按钮
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-button'; // 根据需要添加样式类
+    deleteButton.style.marginLeft = '10px'; // 设置适当的间距
+    deleteButton.onclick = async () => {
+        try {
+            setLoading(true); // 设置 loading 状态为 true
+            await deleteTodoItem(todo.todo_id); // 调用删除 todo 的函数
+            modal.style.display = 'none'; // 隐藏模态框
+        } catch (error) {
+            console.error('Error deleting todo:', error); // 处理删除失败的错误
+        } finally {
+            setLoading(false); // 最终设置 loading 状态为 false
+        }
+    };
 
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Done';
-                deleteButton.style.marginLeft = '10px';
-                deleteButton.onclick = async () => {
-                    try {
-                        setLoading(true);
-                        await deleteTodoItem(todo.todo_id);
-                        modal.style.display = 'none';
-                    } catch (error) {
-                        console.error('Error deleting todo:', error);
-                    } finally {
-                        setLoading(false);
-                    }
-                };
+    // 创建删除图标
+    const deleteIcon = document.createElement('span');
+    deleteIcon.className = 'delete-icon'; // 根据需要添加样式类
+    deleteIcon.innerHTML = `
+    <svg t="1719515589161" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2387" width="24" height="24"><path d="M511.32 108.71c206.36 0.27 379 156.8 399.37 362.14S792.62 863.62 590.35 904.47s-402.61-78.15-463.51-275.31 37.43-408.41 227.52-488.75a400.92 400.92 0 0 1 157-31.7m0-43.07C264.81 65.64 65 265.48 65 512s199.81 446.35 446.32 446.35S957.68 758.52 957.68 512 757.85 65.64 511.32 65.64z m0 0" p-id="2388"></path><path d="M494.09 702.68a45 45 0 0 1-31.44-12.81L316.36 547a45 45 0 1 1 62.88-64.38l112.47 109.84 191.41-216.32a45 45 0 1 1 67.4 59.63L527.79 687.5a45 45 0 0 1-32.06 15.15z" p-id="2389"></path></svg>
+  `;
 
-                firstLine.appendChild(todoNameText);
-                firstLine.appendChild(deleteButton);
+    // 将删除图标添加到删除按钮中
+    deleteButton.appendChild(deleteIcon);
+
+    // 将 todo 名称和删除按钮添加到第一行元素中
+    firstLine.appendChild(todoNameText);
+    firstLine.appendChild(deleteButton);
 
                 const progressContainer = document.createElement('div');
                 progressContainer.classList.add('progress-container');
@@ -237,22 +250,23 @@ const CalendarPage = () => {
                     renderCalendar(currentMonth.getFullYear(), currentMonth.getMonth())
                 )}
             </div>
-            <div className="todo-form mt-4 flex items-center justify-center gap-2">
+            <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
                 <input
                     type="text"
                     value={newTodo.title}
                     onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
                     placeholder="Todo Title"
-                    className="input"
+                    className="peer flex-grow-1 h-12 w-full block rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
                 />
                 <input
                     type="date"
                     value={newTodo.date}
                     onChange={(e) => setNewTodo({ ...newTodo, date: e.target.value })}
-                    className="input"
+                    className="peer flex-grow-1 h-12 w-full block rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
                 />
                 <AddEventButton onClick={handleAddTodo} />
             </div>
+
 
             {/* Modal */}
             <div id="modal" className="modal">

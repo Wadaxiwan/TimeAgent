@@ -85,13 +85,14 @@
     display: flex;
     justify-content: space-between;
     margin: 20px 0;
-}
+}*/
 
-.event-form input {
+.input {
     padding: 10px;
     border: 1px solid #ccc;
+    border-radius: 5px;
     width: 40%;
-} */
+}
 
 .modal {
     display: none;

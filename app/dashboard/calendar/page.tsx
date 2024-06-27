@@ -41,23 +41,54 @@ const CalendarPage = () => {
         }
     };
 
+    // const renderCalendar = (year: number, month: number) => {
+    //     const calendar = document.getElementById('calendar-grid');
+    //     if (!calendar) return;
+
+    //     calendar.innerHTML = '';
+
+    //     const daysInMonth = new Date(year, month + 1, 0).getDate();
+    //     const firstDayIndex = new Date(year, month, 1).getDay();
+    //     const lastDayIndex = new Date(year, month, daysInMonth).getDay();
+    //     const prevDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+    //     const nextDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
+
+    //     renderWeekDays(calendar);
+    //     renderEmptyDays(calendar, prevDays);
+    //     renderMonthDays(calendar, year, month, daysInMonth);
+    //     renderEmptyDays(calendar, nextDays);
+    // };
+
     const renderCalendar = (year: number, month: number) => {
         const calendar = document.getElementById('calendar-grid');
         if (!calendar) return;
-
+    
         calendar.innerHTML = '';
-
+    
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayIndex = new Date(year, month, 1).getDay();
         const lastDayIndex = new Date(year, month, daysInMonth).getDay();
         const prevDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
         const nextDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
-
+    
         renderWeekDays(calendar);
         renderEmptyDays(calendar, prevDays);
         renderMonthDays(calendar, year, month, daysInMonth);
         renderEmptyDays(calendar, nextDays);
-    };
+    
+        // 确保同一行的所有日期框高度一致
+        const rows: HTMLElement[][] = Array.from(calendar.children).reduce((rows: HTMLElement[][], el, index) => {
+            const rowIndex = Math.floor(index / 7);
+            if (!rows[rowIndex]) rows[rowIndex] = [];
+            rows[rowIndex].push(el as HTMLElement);
+            return rows;
+        }, []);
+    
+        rows.forEach(row => {
+            const maxHeight = Math.max(...row.map(el => el.clientHeight));
+            row.forEach(el => (el.style.height = `${maxHeight}px`));
+        });
+    };    
 
     const renderWeekDays = (calendar: HTMLElement) => {
         const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

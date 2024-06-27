@@ -17,6 +17,12 @@ import exp from 'constants';
 import { fetchContent } from './actions';
 import { format } from 'date-fns';
 
+export interface Todo {
+  todo_id: string; // 假设你的待办事项有一个唯一的 ID
+  title: string;
+  date: string;
+}
+
 export async function fetchMeetings(){
   noStore();
   try {
@@ -44,21 +50,22 @@ export async function fetchMeetings(){
 export async function fetchCardData() {
   noStore();
   try {
-    // const totalTodoListsPromise = db.query('SELECT COUNT(*) AS count FROM todo_lists');
+    const totalTodoListsPromise = sql`SELECT COUNT(*) AS count FROM todos`;
     const scheduledMeetingsPromise = sql`SELECT COUNT(*) AS count FROM meetings WHERE status = 'scheduled'`;
     const summariedMeetingsPromise = sql`SELECT COUNT(*) AS count FROM meetings WHERE status = 'summary'`;
     const totalMeetingsPromise = sql`SELECT COUNT(*) AS count FROM meetings`;
 
     const data = await Promise.all([
+      totalTodoListsPromise,
       scheduledMeetingsPromise,
       summariedMeetingsPromise,
       totalMeetingsPromise,
     ]);
 
-    const totalTodoLists = Number('0');
-    const scheduledMeetings = Number(data[0].rows[0].count ?? '0');
-    const summariedMeetings = Number(data[1].rows[0].count ?? '0');
-    const totalMeetings = Number(data[2].rows[0].count ?? '0');
+    const totalTodoLists = Number(data[0].rows[0].count ?? '0');
+    const scheduledMeetings = Number(data[1].rows[0].count ?? '0');
+    const summariedMeetings = Number(data[2].rows[0].count ?? '0');
+    const totalMeetings = Number(data[3].rows[0].count ?? '0');
 
     return {
       totalTodoLists,

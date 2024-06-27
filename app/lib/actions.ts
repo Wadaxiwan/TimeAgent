@@ -188,31 +188,75 @@ export async function fetchContent(meeting_id: string, type: string) {
   }
 }
 
-export async function fetchTodos() {
-  const rows = sql`SELECT * FROM todos ORDER BY date, priority`;
-  return rows;
+export interface Todo {
+  todo_id: string; // 假设你的待办事项有一个唯一的 ID
+  title: string;
+  date: string;
+  progress?: number;
 }
 
-export async function createOrUpdateTodo(todo: any) {
-  if (todo.id) {
-    sql`
-      UPDATE todos
-      SET title = ${todo.title}, date = ${todo.date}, details = ${todo.details}, priority = ${todo.priority}
-      WHERE id = ${todo.id}
-    `;  
-  } else {
-    const id = uuidv4();
-    sql`
-      INSERT INTO todos (id, title, date, details, priority)
-      VALUES (${id}, ${todo.title}, ${todo.date}, ${todo.details}, ${todo.priority})
+export async function fetchTodos(){
+  try {
+    const data = await sql<Todo>`
+      SELECT
+        todo_id,
+        title,
+        date,
+        progress
+      FROM todos
+      ORDER BY date
     `;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch todos.');
   }
 }
 
-export async function deleteTodo(id: any) {
+
+export async function createOrUpdateTodo(todo: any) {
+  try{
+    if (todo.todo_id) {
+      // 如果传入的 todo 包含 todo_id，则执行更新操作
+      await sql`
+        UPDATE todos
+        SET title = ${todo.title}, date = ${todo.date}, progress = ${todo.progress}
+        WHERE todo_id = ${todo.todo_id}
+      `;
+      const newTodo: Todo[] = [{
+        todo_id: todo.todo_id,
+        title: todo.title,
+        date: todo.date,
+        progress: todo.progress ?? 0,
+      }];
+      return newTodo;
+    } else {
+      // 否则执行插入操作
+      const todo_id = uuidv4();
+      const user_id = '410544b2-4001-4271-9855-fec4b6a6442a';
+      await sql`
+        INSERT INTO todos (todo_id, user_id, title, date, progress)
+        VALUES (${todo_id}, ${user_id}, ${todo.title}, ${todo.date}, ${todo.progress ?? 0})
+      `;
+      const newTodo: Todo[] = [{
+        todo_id: todo_id,
+        title: todo.title,
+        date: todo.date,
+        progress: todo.progress ?? 0,
+      }];
+      return newTodo;
+    }
+  }
+  catch (error) {
+    console.error('Database Error:', error);
+    throw ('createOrUpdateTodo:' + error);
+  }
+}
+
+export async function deleteTodo(todo_id: any) {
   sql`
     DELETE FROM todos
-    WHERE id = ${id}
+    WHERE todo_id = ${todo_id}
   `;
 }
 

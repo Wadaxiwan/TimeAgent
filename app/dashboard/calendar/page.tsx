@@ -1,133 +1,124 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import './calendar.css';
+import React, { useState, useEffect, Suspense } from 'react';
+import '@/app/ui/calendar/calendar.css';
 import { lusitana } from '@/app/ui/fonts';
 import { PreviousMonthButton, NextMonthButton, AddEventButton } from '@/app/ui/calendar/buttons';
-
-interface Todo {
-    title: string;
-    date: string;
-}
+import { Todo, fetchTodos, createOrUpdateTodo, deleteTodo } from '@/app/lib/actions';
+import CalendarSkeleton from '@/app/ui/calendar/skeletons';
 
 const CalendarPage = () => {
-    const [todos, setTodos] = useState<Todo[]>([]);
-    const [newTodo, setNewTodo] = useState<Todo>({ title: '', date: '' });
-    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+    const [todos, setTodos] = useState<Todo[] | null>(null);
+    const [newTodo, setNewTodo] = useState({ title: '', date: '' });
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadTodos();
     }, []);
 
     useEffect(() => {
-        renderCalendar(currentMonth.getFullYear(), currentMonth.getMonth());
+        if (todos) {
+            renderCalendar(currentMonth.getFullYear(), currentMonth.getMonth());
+        }
     }, [currentMonth, todos]);
 
-    const handleAddTodo = () => {
+    const handleAddTodo = async () => {
         if (newTodo.title && newTodo.date) {
-            const updatedTodos = [...todos, newTodo];
-            setTodos(updatedTodos);
-            localStorage.setItem('todos', JSON.stringify(updatedTodos));
-            setNewTodo({ title: '', date: '' });
+            try {
+                setLoading(true);
+                const createdTodo = await createOrUpdateTodo(newTodo);
+                setTodos([...todos, ...createdTodo]);
+                setNewTodo({ title: '', date: '' });
+            } catch (error) {
+                console.error('Error adding todo:', error);
+            } finally {
+                setLoading(false);
+            }
         } else {
             alert('Please enter both title and date.');
         }
     };
 
-    const loadTodos = () => {
-        const storedTodos = localStorage.getItem('todos');
-        if (storedTodos) {
-            setTodos(JSON.parse(storedTodos));
+    const loadTodos = async () => {
+        try {
+            setLoading(true);
+            const fetchedTodos = await fetchTodos();
+            setTodos(fetchedTodos);
+        } catch (error) {
+            console.error('Error loading todos:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // const renderCalendar = (year: number, month: number) => {
-    //     const calendar = document.getElementById('calendar-grid');
-    //     if (!calendar) return;
-
-    //     calendar.innerHTML = '';
-
-    //     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    //     const firstDayIndex = new Date(year, month, 1).getDay();
-    //     const lastDayIndex = new Date(year, month, daysInMonth).getDay();
-    //     const prevDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
-    //     const nextDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
-
-    //     renderWeekDays(calendar);
-    //     renderEmptyDays(calendar, prevDays);
-    //     renderMonthDays(calendar, year, month, daysInMonth);
-    //     renderEmptyDays(calendar, nextDays);
-    // };
+    const deleteTodoItem = async (id: string) => {
+        try {
+            await deleteTodo(id);
+            const updatedTodos = todos.filter(todo => todo.todo_id !== id);
+            setTodos(updatedTodos);
+        } catch (error) {
+            console.error('Error deleting todo:', error);
+        }
+    };
 
     const renderCalendar = (year: number, month: number) => {
-        const calendar = document.getElementById('calendar-grid');
-        if (!calendar) return;
-    
-        calendar.innerHTML = '';
-    
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayIndex = new Date(year, month, 1).getDay();
         const lastDayIndex = new Date(year, month, daysInMonth).getDay();
         const prevDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
         const nextDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
     
-        renderWeekDays(calendar);
-        renderEmptyDays(calendar, prevDays);
-        renderMonthDays(calendar, year, month, daysInMonth);
-        renderEmptyDays(calendar, nextDays);
+        let calendarRows = [];
+        let dayCount = 1;
     
-        // 确保同一行的所有日期框高度一致
-        const rows: HTMLElement[][] = Array.from(calendar.children).reduce((rows: HTMLElement[][], el, index) => {
-            const rowIndex = Math.floor(index / 7);
-            if (!rows[rowIndex]) rows[rowIndex] = [];
-            rows[rowIndex].push(el as HTMLElement);
-            return rows;
-        }, []);
+        for (let week = 0; week < 6; week++) {
+            let weekDays = [];
     
-        rows.forEach(row => {
-            const maxHeight = Math.max(...row.map(el => el.clientHeight));
-            row.forEach(el => (el.style.height = `${maxHeight}px`));
-        });
-    };    
-
-    const renderWeekDays = (calendar: HTMLElement) => {
-        const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        weekDays.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.classList.add('calendar-header');
-            dayElement.textContent = day;
-            calendar.appendChild(dayElement);
-        });
-    };
-
-    const renderEmptyDays = (calendar: HTMLElement, count: number) => {
-        for (let i = 0; i < count; i++) {
-            const dayElement = document.createElement('div');
-            dayElement.classList.add('calendar-day', 'empty');
-            calendar.appendChild(dayElement);
+            for (let day = 0; day < 7; day++) {
+                if ((week === 0 && day < prevDays) || (dayCount > daysInMonth)) {
+                    weekDays.push(<div key={`empty-${week}-${day}`} className="calendar-day empty" />);
+                } else {
+                    const date = new Date(year, month, dayCount);
+                    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    const dayTodos = todos?.filter(todo => {
+                        const todoDate = new Date(todo.date);
+                        const todoDateString = `${todoDate.getFullYear()}-${String(todoDate.getMonth() + 1).padStart(2, '0')}-${String(todoDate.getDate()).padStart(2, '0')}`;
+                        return todoDateString === dateString;
+                    }) || [];
+    
+                    weekDays.push(
+                        <div
+                            key={`day-${dayCount}`}
+                            className="calendar-day"
+                            onClick={() => openModal(dateString)}
+                        >
+                            <div className="day-number">{dayCount}</div>
+                            {dayTodos.map(todo => (
+                                <div key={todo.todo_id} className="todo">{todo.title}</div>
+                            ))}
+                        </div>
+                    );
+                    dayCount++;
+                }
+            }
+    
+            calendarRows.push(<div key={`week-${week}`} className="calendar-row">{weekDays}</div>);
+            
+            if (dayCount > daysInMonth) break;
         }
-    };
-
-    const renderMonthDays = (calendar: HTMLElement, year: number, month: number, daysInMonth: number) => {
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = document.createElement('div');
-            dayElement.classList.add('calendar-day');
-            dayElement.textContent = day.toString();
-            dayElement.setAttribute('data-date', `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
-            dayElement.onclick = () => openModal(dayElement.getAttribute('data-date')!);
-
-            // 添加待办事项到日历日期下方
-            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const dayTodos = todos.filter(todo => todo.date === dateString);
-            dayTodos.forEach(todo => {
-                const todoElement = document.createElement('div');
-                todoElement.classList.add('todo');
-                todoElement.textContent = todo.title;
-                dayElement.appendChild(todoElement);
-            });
-
-            calendar.appendChild(dayElement);
-        }
+    
+        return (
+            <div className="calendar-grid">
+                <div className="calendar-row">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                        <div key={day} className="calendar-header">{day}</div>
+                    ))}
+                </div>
+    
+                {calendarRows}
+            </div>
+        );
     };
 
     const openModal = (date: string) => {
@@ -140,29 +131,81 @@ const CalendarPage = () => {
             modalDate.textContent = date;
             modalTodos.innerHTML = '';
 
-            const dayTodos = todos.filter(todo => todo.date === date);
+            modalTodos.style.minHeight = '200px';
+
+            const dayTodos = todos?.filter(todo => {
+                const todoDate = new Date(todo.date);
+                const todoDateString = `${todoDate.getFullYear()}-${String(todoDate.getMonth() + 1).padStart(2, '0')}-${String(todoDate.getDate()).padStart(2, '0')}`;
+                return todoDateString === date;
+            }) || [];
             dayTodos.forEach((todo, index) => {
                 const todoElement = document.createElement('div');
                 todoElement.classList.add('todo');
-                todoElement.textContent = todo.title;
+
+                const firstLine = document.createElement('div');
+                firstLine.classList.add('first-line');
+                firstLine.style.display = 'flex';
+                firstLine.style.padding = '0px 5px';
+
+                const todoNameText = document.createElement('div');
+                todoNameText.textContent = todo.title;
+                todoNameText.style.textAlign = 'left';
+                todoNameText.style.flexGrow = '1';
 
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = () => deleteTodo(date, index);
-                todoElement.appendChild(deleteButton);
+                deleteButton.textContent = 'Done';
+                deleteButton.style.marginLeft = '10px';
+                deleteButton.onclick = async () => {
+                    try {
+                        setLoading(true);
+                        await deleteTodoItem(todo.todo_id);
+                        modal.style.display = 'none';
+                    } catch (error) {
+                        console.error('Error deleting todo:', error);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                firstLine.appendChild(todoNameText);
+                firstLine.appendChild(deleteButton);
+
+                const progressContainer = document.createElement('div');
+                progressContainer.classList.add('progress-container');
+
+                const progressInput = document.createElement('input');
+                progressInput.type = 'range';
+                progressInput.min = '0';
+                progressInput.max = '100';
+                progressInput.value = `${todo.progress ?? 0}`;
+                progressInput.classList.add('progress-bar');
+
+                const progressText = document.createElement('span');
+                progressText.textContent = `${todo.progress ?? 0}` + '%';
+                progressText.style.marginLeft = '5px';
+
+                progressInput.addEventListener('input', async () => {
+                    progressText.textContent = `${progressInput.value}%`;
+                    todo.progress = parseInt(progressInput.value);
+                    setLoading(true);
+                    await createOrUpdateTodo({
+                        todo_id: todo.todo_id,
+                        title: todo.title,
+                        date: todo.date,
+                        progress: parseInt(progressInput.value)
+                    });
+                    setLoading(false);
+                });
+
+                progressContainer.appendChild(progressInput);
+                progressContainer.appendChild(progressText);
+
+                todoElement.appendChild(firstLine);
+                todoElement.appendChild(progressContainer);
 
                 modalTodos.appendChild(todoElement);
-            });
+            });          
         }
-    };
-
-    const deleteTodo = (date: string, todoIndex: number) => {
-        const dayTodos = todos.filter(todo => todo.date === date);
-        const todoToRemove = dayTodos[todoIndex];
-        const updatedTodos = todos.filter(todo => !(todo.date === todoToRemove.date && todo.title === todoToRemove.title));
-        setTodos(updatedTodos);
-        localStorage.setItem('todos', JSON.stringify(updatedTodos));
-        closeModal();
     };
 
     const closeModal = () => {
@@ -185,7 +228,15 @@ const CalendarPage = () => {
                 </span>
                 <NextMonthButton onClick={() => changeMonth(1)} />
             </div>
-            <div id="calendar-grid" className="calendar-grid"></div>
+            <div id="calendar-grid" className="calendar-grid">
+                {loading ? (
+                    <Suspense fallback={<CalendarSkeleton />}>
+                    <CalendarSkeleton />
+                </Suspense>
+                ) : (
+                    renderCalendar(currentMonth.getFullYear(), currentMonth.getMonth())
+                )}
+            </div>
             <div className="todo-form mt-4 flex items-center justify-center gap-2">
                 <input
                     type="text"

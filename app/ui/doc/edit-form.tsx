@@ -32,6 +32,8 @@ export default function EditDocForm({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCorrecting, setIsCorrecting] = useState(false);
 
+  const [triggerReload, setTriggerReload] = useState(0); // 用于触发重新加载
+
   console.log('meeting:', meeting);
   // judge the path is exist or notuseEffect(() => {
     useEffect(() => {
@@ -95,7 +97,21 @@ export default function EditDocForm({
     } finally {
       setIsCorrecting(false);
     }
+    // 触发重新加载
+    setTriggerReload(prev => prev + 1);
   };
+
+  // const handleGenerateCorrection = async () => {
+  //   setIsCorrecting(true);
+  //   try {
+  //     const response = await getCorrectionAdvice(content, meeting.meeting_id);
+  //     setCorrection(response.summary);
+  //   } catch (error) {
+  //     console.error('Failed to generate correction advices:', error);
+  //   } finally {
+  //     setIsCorrecting(false);
+  //   }
+  // };
 
   return (
     <form action={updateMeetingWithId}>
@@ -167,25 +183,7 @@ export default function EditDocForm({
             {isCorrecting ? 'Giving correction advice...' : 'Start Correction'}
           </Button>
         </div>
-
-        {/* Meeting Summary */}
-        {/* <div className="mb-4">
-          <label htmlFor="summary" className="mb-2 block text-sm font-medium">
-            Correction Advices
-          </label>
-          <div className="relative">
-            <textarea
-              id="correction"
-              name="correction"
-              value={correction}
-              onChange={(e) => setCorrection(e.target.value)}
-              placeholder="Correction Advices will be presented here"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
-              rows={10}
-            ></textarea>
-          </div>
-        </div>  */}
-        <DisplayJson />
+        <DisplayJson docID={meeting.meeting_id} triggerReload={triggerReload} />
       </div>
       <div className="mt-6 flex justify-end gap-4">
         <Link

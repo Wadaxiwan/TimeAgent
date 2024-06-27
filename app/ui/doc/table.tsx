@@ -51,10 +51,7 @@ export default async function DocsTable({
                   Title
                 </th> */}
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Date
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Status
+                  Title
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Content
@@ -76,10 +73,7 @@ export default async function DocsTable({
                     </p>
                   </td> */}
                   <td className="whitespace-nowrap px-3 py-3">
-                    {format(new Date(meeting.date), 'yyyy-MM-dd HH:mm:ss')}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
-                    <DocStatus status={meeting.status} />
+                    {meeting.title}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {meeting.meeting_summary_content}

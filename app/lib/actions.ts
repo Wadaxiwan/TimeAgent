@@ -76,7 +76,7 @@ export async function createMeeting(prevState: State, formData: FormData) {
   redirect('/dashboard/meeting');
 }
 
-export async function createTODO(prevState: State, formData: FormData) {
+export async function createDoc(prevState: State, formData: FormData) {
 
   const validatedFields = CreateMeeting.safeParse({
     userId: formData.get('userId'),
@@ -107,11 +107,11 @@ export async function createTODO(prevState: State, formData: FormData) {
 
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to create todo.');
+    throw new Error('Failed to create doc.');
   }
 
-  revalidatePath('/dashboard/todo');
-  redirect('/dashboard/todo');
+  revalidatePath('/dashboard/doc');
+  redirect('/dashboard/doc');
 }
 
 
@@ -246,6 +246,37 @@ export async function getCorrectionAdvice(content: string, meeting_id: string) {
 
       try {
         const summary = await fs.readFile(correctionPath, 'utf8');
+        resolve({ summary });
+      } catch (readError) {
+        reject(`read error: ${readError}`);
+      }
+    });
+  });
+
+}
+
+export async function generateContent(doccontent: string) {
+  const contentDir = path.join(process.cwd(), 'public', 'doccontents');
+  const contentPath = path.join(contentDir, `tmp_description.txt`);
+
+  await fs.mkdir(contentDir, { recursive: true });
+  await fs.writeFile(contentPath, doccontent, 'utf8');
+
+  const summaryDir = path.join(process.cwd(), 'public', 'doccontents');
+  await fs.mkdir(summaryDir, { recursive: true });
+  
+  const summaryPath = path.join(summaryDir, `tmp_content.txt`);
+
+  return new Promise((resolve, reject) => {
+    exec(`python module/meeting_summary.py --in_path ${contentPath} --out_path ${summaryPath}`, async (error: any, stdout: any, stderr: any) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        reject(`exec error: ${error}`);
+        return;
+      }
+
+      try {
+        const summary = await fs.readFile(summaryPath, 'utf8');
         resolve({ summary });
       } catch (readError) {
         reject(`read error: ${readError}`);

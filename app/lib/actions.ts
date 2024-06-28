@@ -106,15 +106,29 @@ export async function createDoc(prevState: State, formData: FormData) {
     };
   }
 
+  console.log('userID', validatedFields.data.userId);
+
   const document_id = uuidv4(); // 生成唯一的会议 ID
   const { title, userId, content, summary } = validatedFields.data;
 
   console.log('Creating document:', { document_id, userId, title, content, summary });
 
+  const contentDir = path.join(process.cwd(), 'public', 'doc_content');
+  const contentPath = path.join(contentDir, `${document_id}_content.txt`);
+  const summaryDir = path.join(process.cwd(), 'public', 'doc_summary');
+  const summaryPath = path.join(summaryDir, `${document_id}_summary.txt`);
+
+
   try {
+    await fs.mkdir(contentDir, { recursive: true });
+    await fs.writeFile(contentPath, content, 'utf8');
+
+    await fs.mkdir(summaryDir, { recursive: true });
+    await fs.writeFile(summaryPath, summary, 'utf8');
+
     const data = await sql<Documents>`
-      INSERT INTO documents (document_id, user_id, title, document_content, document_summary)
-      VALUES (${document_id}, ${userId}, ${title}, ${content}, ${summary})
+      INSERT INTO documents (document_id, user_id, title)
+      VALUES (${document_id}, ${userId}, ${title})
       RETURNING *
     `;
   } catch (error) {
@@ -352,7 +366,7 @@ export async function generateTmpContent(doccontent: string) {
       }
 
       try {
-        const summary = fs.readFile(summaryPath, 'utf8');
+        const summary = await fs.readFile(summaryPath, 'utf8');
         // del the contents and summary file
         await fs.rm(contentPath);
         await fs.rm(summaryPath);

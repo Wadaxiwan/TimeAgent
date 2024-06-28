@@ -1,0 +1,225 @@
+SETTING=$1
+OUTPUT_DIR=./output/bmae_pipeline_layernorm_setting_${SETTING}
+IMAGENET_DIR=./data/cifar-10-batches-py
+MAE_INIT_DIR=./output/mae_1_deit_tiny
+MASTER_PORT=5304
+
+python -m torch.distributed.launch \
+    --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+    bmae_pretrain.py \
+    --output_dir ${OUTPUT_DIR}/mae_2_deit_tiny \
+    --log_dir ${OUTPUT_DIR}/mae_2_deit_tiny \
+    --batch_size 128 \
+    --model bmae_deit_tiny_patch4 \
+    --model_path ./output/mae_1_deit_tiny/checkpoint-40.pth \
+    --teacher_model deit_tiny_patch4 \
+    --teacher_model_path ./output/mae_1_deit_tiny/checkpoint-40.pth \
+    --align_setting ${SETTING} \
+    --mask_ratio 0.75 \
+    --epochs 40 \
+    --warmup_epochs 5 \
+    --drop_path 0.25 \
+    --blr 1.5e-3 --weight_decay 0.05 \
+    --input_size 32 \
+    --data_path ${IMAGENET_DIR} \
+    --target_layer 11 \
+    --enable_layer_norm \
+    --use_exam_data 
+
+# python -m torch.distributed.launch \
+#     --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+#     main_finetune.py \
+#     --output_dir ${OUTPUT_DIR}/mae_2_deit_tiny_ft \
+#     --log_dir ${OUTPUT_DIR}/mae_2_deit_tiny_ft \
+#     --batch_size 128 \
+#     --input_size 32 \
+#     --nb_classes 10 \
+#     --model deit_tiny_patch4 \
+#     --finetune ${OUTPUT_DIR}/mae_2_deit_tiny/checkpoint-39.pth \
+#     --epochs 100 \
+#     --warmup_epochs 10 \
+#     --blr 4e-3 --layer_decay 0.65 \
+#     --weight_decay 0.0 --drop_path 0.1 --mixup 0.8 --cutmix 1.0 \
+#     --dist_eval --data_path ${IMAGENET_DIR} \
+#     --use_exam_data 
+
+# python -m torch.distributed.launch \
+#     --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+#     main_linprobe.py \
+#     --output_dir ${OUTPUT_DIR}/mae_2_deit_tiny_lin \
+#     --log_dir ${OUTPUT_DIR}/mae_2_deit_tiny_lin \
+#     --batch_size 4096 \
+#     --model deit_tiny_patch4 \
+#     --finetune  ${OUTPUT_DIR}/mae_2_deit_tiny/checkpoint-39.pth \
+#     --epochs 100 \
+#     --nb_classes 10 \
+#     --input_size 32 \
+#     --blr 0.1 \
+#     --weight_decay 0.0 \
+#     --dist_eval --data_path ${IMAGENET_DIR} \
+#     --use_exam_data 
+
+python -m torch.distributed.launch \
+    --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+    bmae_pretrain.py \
+    --output_dir ${OUTPUT_DIR}/mae_3_deit_tiny \
+    --log_dir ${OUTPUT_DIR}/mae_3_deit_tiny \
+    --batch_size 128 \
+    --model bmae_deit_tiny_patch4 \
+    --model_path ${OUTPUT_DIR}/mae_2_deit_tiny/checkpoint-39.pth \
+    --teacher_model deit_tiny_patch4 \
+    --teacher_model_path ${OUTPUT_DIR}/mae_2_deit_tiny/checkpoint-39.pth \
+    --align_setting ${SETTING} \
+    --mask_ratio 0.75 \
+    --epochs 40 \
+    --warmup_epochs 5 \
+    --drop_path 0.25 \
+    --blr 1.5e-3 --weight_decay 0.05 \
+    --input_size 32 \
+    --data_path ${IMAGENET_DIR} \
+    --target_layer 11 \
+    --enable_layer_norm \
+    --use_exam_data 
+
+# python -m torch.distributed.launch \
+#     --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+#     main_finetune.py \
+#     --output_dir ${OUTPUT_DIR}/mae_3_deit_tiny_ft \
+#     --log_dir ${OUTPUT_DIR}/mae_3_deit_tiny_ft \
+#     --batch_size 128 \
+#     --input_size 32 \
+#     --nb_classes 10 \
+#     --model deit_tiny_patch4 \
+#     --finetune ${OUTPUT_DIR}/mae_3_deit_tiny/checkpoint-39.pth \
+#     --epochs 100 \
+#     --warmup_epochs 10 \
+#     --lr 4e-3 --layer_decay 0.65 \
+#     --weight_decay 0.0 --drop_path 0.1 --mixup 0.8 --cutmix 1.0 \
+#     --dist_eval --data_path ${IMAGENET_DIR} \
+#     --use_exam_data 
+
+# python -m torch.distributed.launch \
+#     --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+#     main_linprobe.py \
+#     --output_dir ${OUTPUT_DIR}/mae_3_deit_tiny_lin \
+#     --log_dir ${OUTPUT_DIR}/mae_3_deit_tiny_lin \
+#     --batch_size 4096 \
+#     --model deit_tiny_patch4 \
+#     --finetune  ${OUTPUT_DIR}/mae_3_deit_tiny/checkpoint-39.pth \
+#     --epochs 100 \
+#     --nb_classes 10 \
+#     --input_size 32 \
+#     --blr 0.1 \
+#     --weight_decay 0.0 \
+#     --dist_eval --data_path ${IMAGENET_DIR} \
+#     --use_exam_data 
+
+python -m torch.distributed.launch \
+    --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+    bmae_pretrain.py \
+    --output_dir ${OUTPUT_DIR}/mae_4_deit_tiny \
+    --log_dir ${OUTPUT_DIR}/mae_4_deit_tiny \
+    --batch_size 128 \
+    --model bmae_deit_tiny_patch4 \
+    --model_path ${OUTPUT_DIR}/mae_3_deit_tiny/checkpoint-39.pth \
+    --teacher_model deit_tiny_patch4 \
+    --teacher_model_path ${OUTPUT_DIR}/mae_3_deit_tiny/checkpoint-39.pth \
+    --align_setting ${SETTING} \
+    --mask_ratio 0.75 \
+    --epochs 40 \
+    --warmup_epochs 5 \
+    --drop_path 0.25 \
+    --blr 1.5e-3 --weight_decay 0.05 \
+    --input_size 32 \
+    --data_path ${IMAGENET_DIR} \
+    --target_layer 11 \
+    --enable_layer_norm \
+    --use_exam_data 
+
+# python -m torch.distributed.launch \
+#     --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+#     main_finetune.py \
+#     --output_dir ${OUTPUT_DIR}/mae_4_deit_tiny_ft \
+#     --log_dir ${OUTPUT_DIR}/mae_4_deit_tiny_ft \
+#     --batch_size 128 \
+#     --input_size 32 \
+#     --nb_classes 10 \
+#     --model deit_tiny_patch4 \
+#     --finetune ${OUTPUT_DIR}/mae_4_deit_tiny/checkpoint-39.pth \
+#     --epochs 100 \
+#     --warmup_epochs 10 \
+#     --lr 4e-3 --layer_decay 0.65 \
+#     --weight_decay 0.0 --drop_path 0.1 --mixup 0.8 --cutmix 1.0 \
+#     --dist_eval --data_path ${IMAGENET_DIR} \
+#     --use_exam_data 
+
+# python -m torch.distributed.launch \
+#     --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+#     main_linprobe.py \
+#     --output_dir ${OUTPUT_DIR}/mae_4_deit_tiny_lin \
+#     --log_dir ${OUTPUT_DIR}/mae_4_deit_tiny_lin \
+#     --batch_size 4096 \
+#     --model deit_tiny_patch4 \
+#     --finetune  ${OUTPUT_DIR}/mae_4_deit_tiny/checkpoint-39.pth \
+#     --epochs 100 \
+#     --nb_classes 10 \
+#     --input_size 32 \
+#     --blr 0.1 \
+#     --weight_decay 0.0 \
+#     --dist_eval --data_path ${IMAGENET_DIR} \
+#     --use_exam_data 
+
+python -m torch.distributed.launch \
+    --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+    bmae_pretrain.py \
+    --output_dir ${OUTPUT_DIR}/mae_5_deit_tiny \
+    --log_dir ${OUTPUT_DIR}/mae_5_deit_tiny \
+    --batch_size 128 \
+    --model bmae_deit_tiny_patch4 \
+    --model_path ${OUTPUT_DIR}/mae_4_deit_tiny/checkpoint-39.pth \
+    --teacher_model deit_tiny_patch4 \
+    --teacher_model_path ${OUTPUT_DIR}/mae_4_deit_tiny/checkpoint-39.pth \
+    --align_setting ${SETTING} \
+    --mask_ratio 0.75 \
+    --epochs 40 \
+    --warmup_epochs 5 \
+    --drop_path 0.25 \
+    --blr 1.5e-3 --weight_decay 0.05 \
+    --input_size 32 \
+    --data_path ${IMAGENET_DIR} \
+    --target_layer 11 \
+    --enable_layer_norm \
+    --use_exam_data 
+
+python -m torch.distributed.launch \
+    --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+    main_finetune.py \
+    --output_dir ${OUTPUT_DIR}/mae_5_deit_tiny_ft \
+    --log_dir ${OUTPUT_DIR}/mae_5_deit_tiny_ft \
+    --batch_size 128 \
+    --input_size 32 \
+    --nb_classes 10 \
+    --model deit_tiny_patch4 \
+    --finetune ${OUTPUT_DIR}/mae_5_deit_tiny/checkpoint-39.pth \
+    --epochs 100 \
+    --warmup_epochs 10 \
+    --lr 4e-3 --layer_decay 0.65 \
+    --weight_decay 0.0 --drop_path 0.1 --mixup 0.8 --cutmix 1.0 \
+    --dist_eval --data_path ${IMAGENET_DIR} \
+    --use_exam_data
+
+python -m torch.distributed.launch \
+    --nnodes=1 --nproc_per_node=4 --master_port=${MASTER_PORT} \
+    main_linprobe.py \
+    --output_dir ${OUTPUT_DIR}/mae_5_deit_tiny_lin \
+    --log_dir ${OUTPUT_DIR}/mae_5_deit_tiny_lin \
+    --batch_size 4096 \
+    --model deit_tiny_patch4 \
+    --finetune  ${OUTPUT_DIR}/mae_5_deit_tiny/checkpoint-39.pth \
+    --epochs 100 \
+    --nb_classes 10 \
+    --input_size 32 \
+    --blr 0.1 \
+    --weight_decay 0.0 \
+    --dist_eval --data_path ${IMAGENET_DIR} \
+    --use_exam_data

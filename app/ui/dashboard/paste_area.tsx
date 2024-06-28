@@ -1,7 +1,10 @@
 "use client"
+import { State, createDoc } from '@/app/lib/actions';
 import { useState } from 'react';
+import path from 'path';
 
-export default function PasteArea() {
+export default function PasteArea(user_id: string) {
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
@@ -18,7 +21,32 @@ export default function PasteArea() {
         body: formData,
       });
 
-      console.log("response:", response);
+      const json_content = await response.json();
+      const filePath = json_content.filename;
+      const fileContent = json_content.message;
+      console.log("response:", fileContent);
+      console.log("response:", filePath);
+
+      try {
+        
+        const title = path.basename(filePath);
+        
+        // 创建 FormData 并添加字段
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('userId', user_id.user_id);
+        formData.append('content', fileContent);
+
+        console.log("user_id", user_id);
+        
+        // 调用 createDoc
+        const prevState: State = {}; 
+        const result = await createDoc(prevState, formData);
+        console.log('Document created successfully:', result);
+      } catch (err) {
+        console.error('Error:', err);
+      }
+
       if (response.ok) {
         setUploadSuccess(true);
       } else {

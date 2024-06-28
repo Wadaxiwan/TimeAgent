@@ -142,9 +142,9 @@ class WebsocketDemo:
 
 if __name__ == '__main__':
     #控制台获取
-    APPId = "3392c9b4"
-    APISecret = "NjczZjNkOTRiZDUzYWMwZTMyZmZlNjBj"
-    APIKey = "33cfd171c5a0f1ca426e80022a21d0de"
+    APPId = "7da9d102"
+    APISecret = "MjQ3NzRlZDYxODc4OGQwYThlOTg4MDQy"
+    APIKey = "02f5c5def450a3cb19e631e47c3ddcc1"
     parser = argparse.ArgumentParser(description='Process some input and output files.')
     parser.add_argument('--in_path', type=str, help='Input file path', required=True)
     parser.add_argument('--out_path', type=str, help='Output file path', required=True)

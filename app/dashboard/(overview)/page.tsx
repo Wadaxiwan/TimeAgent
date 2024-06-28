@@ -11,8 +11,14 @@ import { useState } from 'react';
 import { saveAs } from 'file-saver';
 import PasteArea from '@/app/ui/dashboard/paste_area';
 import Plan from '@/app/ui/dashboard/plan';
+import { auth } from '@/auth';
 
 export default async function Page() {
+  const session = await auth();
+  if(!session){
+      return;
+  }
+  const user_id = session.user.id;
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
@@ -31,7 +37,7 @@ export default async function Page() {
           Paste Your Content
       </h2>
       <div className="mt-6 flex flex-col items-center justify-center rounded-xl bg-gray-50 p-4">
-        <PasteArea />
+        <PasteArea user_id={user_id}/>
       </div>
       <div className="mt-6 flex flex-col items-center justify-center rounded-xl bg-gray-50 p-4">
         <Plan />

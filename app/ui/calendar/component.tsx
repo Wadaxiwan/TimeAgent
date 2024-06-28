@@ -89,26 +89,35 @@ export default function Calendar({
                 message += `- ${meeting.title} (start ${meeting.date})\n`;
             });
 
-            message += `Meetings typically last two hours.\n\nBased on this schedule, when would be the most suitable time for the ${duration} minutes of work?`;
+            message += `Meetings typically last two hours.\n\nBased on this schedule, when would be the most suitable time for the ${duration} minutes of work? And the time must between 8:00 and 22:00. You must return the time in the format of "YYYY-MM-DD HH:MM" `;
 
             message += 'Please only return the start_time and end_time in JSON format:\n\n';
-            message += '```json\n';
             message += '{\n';
             message += '    "start_time": "YYYY-MM-DD HH:MM",\n';
             message += '    "end_time": "YYYY-MM-DD HH:MM"\n';
             message += '}\n';
-            message += '```\n';
             message += 'Without any other content.\n';
 
-            const formData = new FormData();
-            formData.append('message', message); 
-      
-            const response = await fetch('http://localhost:3001/api/time', {
-              method: 'POST',
-              body: formData,
-            });
+            console.log('message:', message);
 
-            console.log("response:", response);
+            const response = await fetch('http://localhost:3001/api/time', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'text/plain',
+                },
+                body: message,
+              });
+              
+                const responseData = await response.json();
+                console.log("responseData:", responseData);
+
+                // Extract start_time and end_time
+                const { start_time, end_time } = responseData;
+                setNewTodo({
+                    title: 'Something AI Todo',
+                    start_date: start_time,
+                    end_date: end_time
+                });
 
 
         } catch (error) {
@@ -485,7 +494,7 @@ export default function Calendar({
                             onClick={() => {
                             // alert(`Plan a ${duration} minute event`);
                             handleQuickPlan();
-                            setNewTodo({ title: 'Something todo', start_date: '2024-06-30 10:00', end_date: '2024-06-30 12:00'});
+                            // setNewTodo({ title: 'Something todo', start_date: '2024-06-30 10:00', end_date: '2024-06-30 12:00'});
                             }}
                         >
                             Plan

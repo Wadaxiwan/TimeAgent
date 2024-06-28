@@ -67,15 +67,19 @@ if __name__ == '__main__':
 
     in_path = args.in_path
     out_path = args.out_path
-    with open(in_path,'r',encoding='utf-8') as f:
-        content = f.read()
-        question = checklen(getText("user",content))
-        SparkApi.answer = ""
-        SparkApi.main(appid,api_key,api_secret,Spark_url,domain,question)
-        with open(out_path,'w',encoding='utf-8') as ff:
-            ff.write(SparkApi.answer)
-            getText("assistant", SparkApi.answer)
-
+    try:
+        print("Input file path:", in_path)
+        with open(in_path,'r',encoding='utf-8') as f:
+            content = f.read()
+            question = checklen(getText("user",content))
+            SparkApi.answer = ""
+            SparkApi.main(appid,api_key,api_secret,Spark_url,domain,question)
+            with open(out_path,'w',encoding='utf-8') as ff:
+                ff.write(SparkApi.answer)
+                print("Answer:", SparkApi.answer)
+                getText("assistant", SparkApi.answer)
+    except Exception as e:
+        print(e)
 
 
 

@@ -34,7 +34,7 @@ export default function EditMeetingForm({
     useEffect(() => {
       async function loadContent() {
           try {
-            const data = await fetchContent(meeting.meeting_id, 'contents');
+            const data = await fetchContent(meeting.meeting_id, 'content');
             if (data.content) {
               setContent(data.content);
             }
@@ -45,7 +45,7 @@ export default function EditMeetingForm({
   
       async function loadSummary() {
         try {
-            const data = await fetchContent(meeting.meeting_id, 'summaries');
+            const data = await fetchContent(meeting.meeting_id, 'summary');
             if (data.content) {
               setSummary(data.content);
             }

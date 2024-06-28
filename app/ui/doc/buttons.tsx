@@ -1,6 +1,6 @@
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteMeeting } from '@/app/lib/actions';
+import { deleteDocument, deleteMeeting } from '@/app/lib/actions';
 
 export function CreateDoc() {
   return (
@@ -26,9 +26,9 @@ export function UpdateDoc({ id }: { id: string }) {
 }
 
 export function DeleteDoc({ id }: { id: string }) {
-  const deleteMeetingWithId = deleteMeeting.bind(null, id);
+  const deleteDocumentWithId = deleteDocument.bind(null, id);
   return (
-    <form action={deleteMeetingWithId}>
+    <form action={deleteDocumentWithId}>
       <button className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />

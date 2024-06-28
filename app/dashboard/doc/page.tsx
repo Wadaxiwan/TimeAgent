@@ -7,7 +7,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 // import { fetchInvoicesPages } from '@/app/lib/data'; 
 import { Metadata } from 'next';
-import { fetchMeetingsPages } from '@/app/lib/data';
+import { fetchDocumentsPages, fetchMeetingsPages } from '@/app/lib/data';
 
 export const metadata: Metadata = {
   title: 'Document Management',
@@ -26,12 +26,12 @@ export default async function Page(
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
 
-  const totalPages = await fetchMeetingsPages(query);
+  const totalPages = await fetchDocumentsPages(query);
 
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Document List</h1>
+        <h1 className={`${lusitana.className} text-2xl`}>Documents</h1>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
         <Search placeholder="Search doc ..." />

@@ -3,25 +3,24 @@
 import Link from 'next/link';
 import { CheckIcon, ClockIcon, CalendarIcon, UserCircleIcon, InboxIcon, PaperAirplaneIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { createDoc ,generateContent} from '@/app/lib/actions';
+import { createDoc ,generateContent, generateTmpContent} from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 import { useState } from 'react';
 
 
-export default function Form() {
+export default function Form({ users }: { users: User[] }) {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createDoc, initialState);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const [summary, setSummary] = useState('');
 
   const handleGenerateText = async () => {
     setIsGenerating(true);
     try {
-
-      const response = await generateContent(description);
+      const response = await generateTmpContent(content);
       // const response = await generateContent("this is a test");
-      setContent(response.summary);
+      setSummary(response.summary);
       // setContent("this is a test");
     } catch (error) {
       console.error('Failed to generate summary:', error);
@@ -34,10 +33,43 @@ export default function Form() {
     <form action={dispatch}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
 
+      <div className="mb-4">
+          <label htmlFor="user" className="mb-2 block text-sm font-medium">
+            Choose user
+          </label>
+          <div className="relative">
+            <select
+              id="user"
+              name="userId"
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              defaultValue=""
+              aria-describedby="user-error"
+            >
+              <option value="" disabled>
+                Select a user
+              </option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+          </div>
+          <div id="customer-error" aria-live="polite" aria-atomic="true">
+          {state.errors?.userId &&
+            state.errors.userId.map((error: string) => (
+              <p className="mt-2 text-sm text-red-500" key={error}>
+                {error}
+              </p>
+            ))}
+        </div>
+        </div>
+
         {/* document title */}
         <div className="mb-4">
           <label htmlFor="title" className="mb-2 block text-sm font-medium">
-            document title
+            Document title
           </label>
           <div className="relative">
             <input
@@ -63,20 +95,19 @@ export default function Form() {
         {/* Description input */}
         <div className="mb-4">
           <label htmlFor="description" className="mb-2 block text-sm font-medium">
-            Description
+            Content
           </label>
           <div className="relative">
-            <input
-              id="description"
-              name="description"
-              type="text"
-              placeholder="Enter description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+            <textarea
+              id="content"
+              name="content"
+              placeholder="Enter content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="peer block w-full rounded-md border border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
               aria-describedby="description-error"
+              rows={10}
             />
-            <InboxIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
           {/* <div id="description-error" aria-live="polite" aria-atomic="true">
             {state.errors?.description &&
@@ -91,7 +122,7 @@ export default function Form() {
         {/* Generate Text Button */}
         <div className="mb-4">
           <Button type="button" onClick={handleGenerateText} disabled={isGenerating}>
-            {isGenerating ? 'Generating Text...' : 'Generate Text'}
+            {isGenerating ? 'Generating Summary...' : 'Generate Summary'}
           </Button>
         </div>
 
@@ -106,7 +137,7 @@ export default function Form() {
             <textarea
               id="summary"
               name="summary"
-              value={content}
+              value={summary}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Document summary will be generated here"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"

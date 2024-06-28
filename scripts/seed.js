@@ -57,7 +57,8 @@ async function seedTodos(client) {
       todo_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
       user_id UUID NOT NULL,
       title VARCHAR(255) NOT NULL,
-      date DATE NOT NULL,
+      start_date TIMESTAMP NOT NULL,
+      end_date TIMESTAMP NOT NULL,
       progress INT DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
       FOREIGN KEY (user_id) REFERENCES users(id)
     )`;
@@ -67,8 +68,8 @@ async function seedTodos(client) {
       todos.map((todo) => {
         todo.todo_id = uuidv4();
         return client.sql`
-          INSERT INTO todos (todo_id, user_id, title, date, progress)
-          VALUES (${todo.todo_id}, ${todo.user_id}, ${todo.title}, ${todo.date}, ${todo.progress})
+          INSERT INTO todos (todo_id, user_id, title, start_date, end_date, progress)
+          VALUES (${todo.todo_id}, ${todo.user_id}, ${todo.title}, ${todo.start_date}, ${todo.end_date}, ${todo.progress})
           ON CONFLICT (todo_id) DO NOTHING;
           `;         
       }),

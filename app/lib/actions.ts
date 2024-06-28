@@ -195,10 +195,11 @@ export async function fetchTodos(){
       SELECT
         todo_id,
         title,
-        date,
+        start_date,
+        end_date,
         progress
       FROM todos
-      ORDER BY date
+      ORDER BY start_date
     `;
     return data.rows;
   } catch (error) {
@@ -230,13 +231,14 @@ export async function createOrUpdateTodo(todo: any) {
       // 如果传入的 todo 包含 todo_id，则执行更新操作
       await sql`
         UPDATE todos
-        SET title = ${todo.title}, date = ${todo.date}, progress = ${todo.progress}
+        SET title = ${todo.title}, start_date = ${todo.start_date}, end_date = ${todo.end_date}, progress = ${todo.progress}
         WHERE todo_id = ${todo.todo_id}
       `;
       const newTodo: Todo[] = [{
         todo_id: todo.todo_id,
         title: todo.title,
-        date: todo.date,
+        start_date: todo.start_date,
+        end_date: todo.end_date,
         progress: todo.progress ?? 0,
       }];
       return newTodo;
@@ -245,13 +247,14 @@ export async function createOrUpdateTodo(todo: any) {
       const todo_id = uuidv4();
       const user_id = '410544b2-4001-4271-9855-fec4b6a6442a';
       await sql`
-        INSERT INTO todos (todo_id, user_id, title, date, progress)
-        VALUES (${todo_id}, ${user_id}, ${todo.title}, ${todo.date}, ${todo.progress ?? 0})
+        INSERT INTO todos (todo_id, user_id, title, start_date, end_date, progress)
+        VALUES (${todo_id}, ${user_id}, ${todo.title}, ${todo.start_date}, ${todo.end_date}, ${todo.progress ?? 0})
       `;
       const newTodo: Todo[] = [{
         todo_id: todo_id,
         title: todo.title,
-        date: todo.date,
+        start_date: todo.start_date,
+        end_date: todo.end_date,
         progress: todo.progress ?? 0,
       }];
       return newTodo;

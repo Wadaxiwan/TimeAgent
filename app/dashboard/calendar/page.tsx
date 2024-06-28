@@ -3,19 +3,25 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import '@/app/ui/calendar/calendar.css';
 import { lusitana } from '@/app/ui/fonts';
-import { PreviousMonthButton, NextMonthButton, AddEventButton } from '@/app/ui/calendar/buttons';
+import { PreviousMonthButton, NextMonthButton, AddEventButton, QuickPlanButton } from '@/app/ui/calendar/buttons';
 import { Todo, Meeting_Todo } from '../../lib/definitions';
 import { fetchTodos, fetchMeetingsAsTodos, createOrUpdateTodo, deleteTodo } from '@/app/lib/actions';
 import CalendarSkeleton from '@/app/ui/calendar/skeletons';
 import MeetingStatus from '@/app/ui/meeting/status';
 import ReactDOM from 'react-dom';
+import { CalendarIcon } from '@heroicons/react/24/outline';
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { Label } from "@/components/ui/label"
 
 const CalendarPage = () => {
     const [todos, setTodos] = useState<Todo[] | null>(null);
     const [meetings, setMeetings] = useState<Meeting_Todo[] | null>(null);
-    const [newTodo, setNewTodo] = useState({ title: '', date: '' });
+    const [newTodo, setNewTodo] = useState({ title: '', start_date: '', end_date: '' });
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [loading, setLoading] = useState(true);
+    const [duration, setDuration] = useState(60);
 
     useEffect(() => {
         loadTodos();
@@ -28,12 +34,18 @@ const CalendarPage = () => {
     }, [currentMonth, todos]);
 
     const handleAddTodo = async () => {
-        if (newTodo.title && newTodo.date) {
+        if (newTodo.title && newTodo.start_date && newTodo.end_date) {
+            // 检查结束日期不能早于开始日期
+            if (new Date(newTodo.end_date) < new Date(newTodo.start_date)) {
+                alert('End date cannot be earlier than start date.');
+                return;
+            }
+
             try {
                 setLoading(true);
                 const createdTodo = await createOrUpdateTodo(newTodo);
                 setTodos([...todos, ...createdTodo]);
-                setNewTodo({ title: '', date: '' });
+                setNewTodo({ title: '', start_date: '', end_date: ''});
             } catch (error) {
                 console.error('Error adding todo:', error);
             } finally {
@@ -43,6 +55,102 @@ const CalendarPage = () => {
             alert('Please enter both title and date.');
         }
     };
+
+    const handleQuickPlan = async () => {
+        try {
+            // 获取从现在开始的三天内的todos
+            const now = new Date();
+            const threeDaysLater = new Date();
+            threeDaysLater.setDate(now.getDate() + 3);
+
+            const todosForThreeDays = todos?.filter(todo => {
+                const todoDate = new Date(todo.start_date);
+                return todoDate >= now && todoDate <= threeDaysLater;
+            }) || [];
+
+            const meetingsForThreeDays = meetings?.filter(meeting => {
+                const meetingDate = new Date(meeting.date);
+                return meetingDate >= now && meetingDate <= threeDaysLater;
+            }) || [];
+    
+            // Prepare the message to display in alert
+            let message = `I plan to work for ${duration} minutes, but I already have the following tasks scheduled:\n`;
+
+            message += '\nFirstly, Todos for the next three days:\n';
+            todosForThreeDays.forEach(todo => {
+                message += `- ${todo.title} (${todo.start_date} to ${todo.end_date})\n`;
+            });
+    
+            message += '\nSecondly,Meetings for the next three days:\n';
+            meetingsForThreeDays.forEach(meeting => {
+                message += `- ${meeting.title} (start ${meeting.date})\n`;
+            });
+
+            message += `Meetings typically last two hours.\n\nBased on this schedule, when would be the most suitable time for the ${duration} minutes of work?`;
+
+            message += 'Please return the start_time and end_time in JSON format:\n\n';
+            message += '```json\n';
+            message += '{\n';
+            message += '    "start_time": "YYYY-MM-DD HH:MM",\n';
+            message += '    "end_time": "YYYY-MM-DD HH:MM"\n';
+            message += '}\n';
+            message += '```';
+
+            alert(message);
+
+        } catch (error) {
+            console.error('Error handling quick plan:', error);
+        }
+    };    
+    
+      const fetchTodosForThreeDays = async (startDate: Date, endDate: Date) => {
+        try {
+          const fetchedTodos = await fetchTodos(); // Assuming fetchTodos retrieves todos for the current user
+          const todosForThreeDays = fetchedTodos.filter(todo => {
+            const todoDate = new Date(todo.start_date);
+            return todoDate >= startDate && todoDate <= endDate;
+          });
+          return todosForThreeDays;
+        } catch (error) {
+          console.error('Error fetching todos for three days:', error);
+          return [];
+        }
+      };
+      
+      const fetchMeetingsForThreeDays = async (startDate: Date, endDate: Date) => {
+        try {
+          const fetchedMeetings = await fetchMeetingsAsTodos(); // Assuming fetchMeetingsAsTodos retrieves meetings for the current user
+          const meetingsForThreeDays = fetchedMeetings.filter(meeting => {
+            const meetingDate = new Date(meeting.date);
+            return meetingDate >= startDate && meetingDate <= endDate;
+          });
+          return meetingsForThreeDays;
+        } catch (error) {
+          console.error('Error fetching meetings for three days:', error);
+          return [];
+        }
+      };
+      
+      const generateAvailableTimePrompt = (todos: Todo[], meetings: Meeting_Todo[]) => {
+        // Logic to calculate available time based on todos and meetings
+        // You can implement your own logic here based on your application's requirements
+        const totalTodosTime = todos.reduce((acc, todo) => {
+          const startTime = new Date(todo.start_date);
+          const endTime = new Date(todo.end_date);
+          return acc + (endTime.getTime() - startTime.getTime());
+        }, 0);
+      
+        const totalMeetingsTime = meetings.reduce((acc, meeting) => {
+          // Assuming meetings have a default duration of 2 hours (or 120 minutes)
+          return acc + 120 * 60 * 1000; // Convert 120 minutes to milliseconds
+        }, 0);
+      
+        const availableTime = totalTodosTime - totalMeetingsTime;
+        const availableTimeHours = availableTime / (60 * 60 * 1000); // Convert milliseconds to hours
+      
+        return `Based on your schedule for the next three days, you have approximately ${availableTimeHours.toFixed(1)} hours of available time. Please enter your estimated duration (in hours):`;
+      };
+      
 
     const loadTodos = async () => {
         try {
@@ -88,7 +196,7 @@ const CalendarPage = () => {
                     const date = new Date(year, month, dayCount);
                     const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     const dayTodos = todos?.filter(todo => {
-                        const todoDate = new Date(todo.date);
+                        const todoDate = new Date(todo.start_date);
                         const todoDateString = `${todoDate.getFullYear()}-${String(todoDate.getMonth() + 1).padStart(2, '0')}-${String(todoDate.getDate()).padStart(2, '0')}`;
                         return todoDateString === dateString;
                     }) || [];
@@ -149,7 +257,7 @@ const CalendarPage = () => {
             modalTodos.style.minHeight = '200px';
 
             const dayTodos = todos?.filter(todo => {
-                const todoDate = new Date(todo.date);
+                const todoDate = new Date(todo.start_date);
                 const todoDateString = `${todoDate.getFullYear()}-${String(todoDate.getMonth() + 1).padStart(2, '0')}-${String(todoDate.getDate()).padStart(2, '0')}`;
                 return todoDateString === date;
             }) || [];
@@ -171,7 +279,10 @@ const CalendarPage = () => {
                 firstLine.style.padding = '0px 5px';
 
                 const todoNameText = document.createElement('div');
-                todoNameText.textContent = todo.title;
+                const start_date = new Date(todo.start_date);
+                const end_date = new Date(todo.end_date);
+                todoNameText.textContent = `${todo.title} (${String(start_date.getHours()).padStart(2, '0')}:${String(start_date.getMinutes()).padStart(2, '0')} - ${String(end_date.getHours()).padStart(2, '0')}:${String(end_date.getMinutes()).padStart(2, '0')})`;
+
                 todoNameText.style.textAlign = 'left';
                 todoNameText.style.flexGrow = '1';
                 
@@ -226,7 +337,8 @@ const CalendarPage = () => {
                     await createOrUpdateTodo({
                         todo_id: todo.todo_id,
                         title: todo.title,
-                        date: todo.date,
+                        start_date: todo.start_date,
+                        end_date: todo.end_date,
                         progress: parseInt(progressInput.value)
                     });
                     setLoading(false);
@@ -303,13 +415,72 @@ const CalendarPage = () => {
                     placeholder="Todo Title"
                     className="peer h-12 block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
                 />
-                <input
-                    type="date"
-                    value={newTodo.date}
-                    onChange={(e) => setNewTodo({ ...newTodo, date: e.target.value })}
-                    className="peer h-12 block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                />
+                {/* start_time */}
+                <div className="relative">
+                    <input
+                        id="start_date"
+                        name="date"
+                        type="datetime-local"
+                        value={newTodo.start_date}
+                        onChange={(e) => setNewTodo({ ...newTodo, start_date: e.target.value })}
+                        className="peer h-12 block w-full rounded-md border border-gray-200 p-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                        aria-describedby="date-error"
+                    />
+                    <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+                </div>
+                {/* end_time */}
+                <div className="relative">
+                    <input
+                        id="end_date"
+                        name="date"
+                        type="datetime-local"
+                        value={newTodo.end_date}
+                        onChange={(e) => setNewTodo({ ...newTodo, end_date: e.target.value })}
+                        className="peer h-12 block w-full rounded-md border border-gray-200 p-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                        aria-describedby="date-error"
+                    />
+                    <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+                </div>
                 <AddEventButton onClick={handleAddTodo} />
+                {/* <QuickPlanButton onClick={() => alert('QuickPlan')} /> */}
+                <Popover>
+                <PopoverTrigger asChild>
+                    <Button
+                    variant="outline"
+                    className="flex h-12 items-center rounded-lg bg-green-600 px-4 text-sm font-medium text-white transition-colors hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                    >
+                    <span className="hidden md:block md:mr-2 font-bold">QuickPlan</span>{' '}
+                    <CalendarIconInput className="ml-2 h-4 w-4" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4 space-y-4">
+                <div className="grid gap-2">
+                        <Label htmlFor="duration">Duration (minutes)</Label>
+                        <Slider
+                        id="duration"
+                        min={15}
+                        max={240}
+                        step={15}
+                        value={[duration]}
+                        onValueChange={setDuration}
+                        className="w-full"
+                        />
+                        <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">{duration} minutes</span>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                            // alert(`Plan a ${duration} minute event`);
+                            handleQuickPlan();
+                            setNewTodo({ title: 'Something todo', start_date: '2024-06-30 10:00', end_date: '2024-06-30 12:00'});
+                            }}
+                        >
+                            Plan
+                        </Button>
+                        </div>
+                    </div>
+                </PopoverContent>
+                </Popover>
             </div>
 
 
@@ -326,3 +497,25 @@ const CalendarPage = () => {
 };
 
 export default CalendarPage;
+
+function CalendarIconInput(props) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M8 2v4" />
+        <path d="M16 2v4" />
+        <rect width="18" height="18" x="3" y="4" rx="2" />
+        <path d="M3 10h18" />
+      </svg>
+    )
+  }

@@ -16,7 +16,8 @@ export type Meeting = {
 export type Todo = {
   todo_id: string; // 假设你的待办事项有一个唯一的 ID
   title: string;
-  date: string;
+  start_date: string;
+  end_date: string;
   progress?: number;
 }
 

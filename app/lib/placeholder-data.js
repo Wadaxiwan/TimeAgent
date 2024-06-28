@@ -35,7 +35,8 @@ const todos = [
     todo_id: '300544b2-4001-4271-9855-fec4b6a6442m',
     user_id: '410544b2-4001-4271-9855-fec4b6a6442a',
     title: 'Buy groceries',
-    date: '2024-06-01',
+    start_date: '2024-06-01 08:00:00',
+    end_date: '2024-06-01 10:00:00',
     progress: 50,
   }
 ]

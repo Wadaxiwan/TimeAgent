@@ -4,12 +4,15 @@ import React, { useState, useEffect, Suspense } from 'react';
 import '@/app/ui/calendar/calendar.css';
 import { lusitana } from '@/app/ui/fonts';
 import { PreviousMonthButton, NextMonthButton, AddEventButton } from '@/app/ui/calendar/buttons';
-import { Todo, fetchTodos, createOrUpdateTodo, deleteTodo } from '@/app/lib/actions';
+import { Todo, Meeting_Todo } from '../../lib/definitions';
+import { fetchTodos, fetchMeetingsAsTodos, createOrUpdateTodo, deleteTodo } from '@/app/lib/actions';
 import CalendarSkeleton from '@/app/ui/calendar/skeletons';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import MeetingStatus from '@/app/ui/meeting/status';
+import ReactDOM from 'react-dom';
 
 const CalendarPage = () => {
     const [todos, setTodos] = useState<Todo[] | null>(null);
+    const [meetings, setMeetings] = useState<Meeting_Todo[] | null>(null);
     const [newTodo, setNewTodo] = useState({ title: '', date: '' });
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [loading, setLoading] = useState(true);
@@ -45,7 +48,9 @@ const CalendarPage = () => {
         try {
             setLoading(true);
             const fetchedTodos = await fetchTodos();
+            const fetchedMeetings = await fetchMeetingsAsTodos();
             setTodos(fetchedTodos);
+            setMeetings(fetchedMeetings);
         } catch (error) {
             console.error('Error loading todos:', error);
         } finally {
@@ -87,6 +92,12 @@ const CalendarPage = () => {
                         const todoDateString = `${todoDate.getFullYear()}-${String(todoDate.getMonth() + 1).padStart(2, '0')}-${String(todoDate.getDate()).padStart(2, '0')}`;
                         return todoDateString === dateString;
                     }) || [];
+
+                    const dayMeetings = meetings?.filter(meeting =>{
+                        const meentingDate = new Date(meeting.date);
+                        const meentingDateString = `${meentingDate.getFullYear()}-${String(meentingDate.getMonth() + 1).padStart(2, '0')}-${String(meentingDate.getDate()).padStart(2, '0')}`;
+                        return meentingDateString === dateString;
+                    }) || [];
     
                     weekDays.push(
                         <div
@@ -97,6 +108,9 @@ const CalendarPage = () => {
                             <div className="day-number">{dayCount}</div>
                             {dayTodos.map(todo => (
                                 <div key={todo.todo_id} className="todo">{todo.title}</div>
+                            ))}
+                            {dayMeetings.map(meeting => (
+                                <div key={meeting.meeting_id} className="meeting">{meeting.title}</div>
                             ))}
                         </div>
                     );
@@ -139,6 +153,14 @@ const CalendarPage = () => {
                 const todoDateString = `${todoDate.getFullYear()}-${String(todoDate.getMonth() + 1).padStart(2, '0')}-${String(todoDate.getDate()).padStart(2, '0')}`;
                 return todoDateString === date;
             }) || [];
+
+            const dayMeetings = meetings?.filter(meeting =>{
+                const meentingDate = new Date(meeting.date);
+                const meentingDateString = `${meentingDate.getFullYear()}-${String(meentingDate.getMonth() + 1).padStart(2, '0')}-${String(meentingDate.getDate()).padStart(2, '0')}`;
+                return meentingDateString === date;
+            }) || [];
+            
+            // todos
             dayTodos.forEach((todo, index) => {
                 const todoElement = document.createElement('div');
                 todoElement.classList.add('todo');
@@ -154,34 +176,34 @@ const CalendarPage = () => {
                 todoNameText.style.flexGrow = '1';
                 
                 // 创建删除按钮
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'delete-button'; // 根据需要添加样式类
-    deleteButton.style.marginLeft = '10px'; // 设置适当的间距
-    deleteButton.onclick = async () => {
-        try {
-            setLoading(true); // 设置 loading 状态为 true
-            await deleteTodoItem(todo.todo_id); // 调用删除 todo 的函数
-            modal.style.display = 'none'; // 隐藏模态框
-        } catch (error) {
-            console.error('Error deleting todo:', error); // 处理删除失败的错误
-        } finally {
-            setLoading(false); // 最终设置 loading 状态为 false
-        }
-    };
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button'; // 根据需要添加样式类
+                deleteButton.style.marginLeft = '10px'; // 设置适当的间距
+                deleteButton.onclick = async () => {
+                    try {
+                        setLoading(true); // 设置 loading 状态为 true
+                        await deleteTodoItem(todo.todo_id); // 调用删除 todo 的函数
+                        modal.style.display = 'none'; // 隐藏模态框
+                    } catch (error) {
+                        console.error('Error deleting todo:', error); // 处理删除失败的错误
+                    } finally {
+                        setLoading(false); // 最终设置 loading 状态为 false
+                    }
+                };
 
-    // 创建删除图标
-    const deleteIcon = document.createElement('span');
-    deleteIcon.className = 'delete-icon'; // 根据需要添加样式类
-    deleteIcon.innerHTML = `
-    <svg t="1719515589161" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2387" width="24" height="24"><path d="M511.32 108.71c206.36 0.27 379 156.8 399.37 362.14S792.62 863.62 590.35 904.47s-402.61-78.15-463.51-275.31 37.43-408.41 227.52-488.75a400.92 400.92 0 0 1 157-31.7m0-43.07C264.81 65.64 65 265.48 65 512s199.81 446.35 446.32 446.35S957.68 758.52 957.68 512 757.85 65.64 511.32 65.64z m0 0" p-id="2388"></path><path d="M494.09 702.68a45 45 0 0 1-31.44-12.81L316.36 547a45 45 0 1 1 62.88-64.38l112.47 109.84 191.41-216.32a45 45 0 1 1 67.4 59.63L527.79 687.5a45 45 0 0 1-32.06 15.15z" p-id="2389"></path></svg>
-  `;
+                // 创建删除图标
+                const deleteIcon = document.createElement('span');
+                deleteIcon.className = 'delete-icon'; // 根据需要添加样式类
+                deleteIcon.innerHTML = `
+                <svg t="1719515589161" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2387" width="24" height="24"><path d="M511.32 108.71c206.36 0.27 379 156.8 399.37 362.14S792.62 863.62 590.35 904.47s-402.61-78.15-463.51-275.31 37.43-408.41 227.52-488.75a400.92 400.92 0 0 1 157-31.7m0-43.07C264.81 65.64 65 265.48 65 512s199.81 446.35 446.32 446.35S957.68 758.52 957.68 512 757.85 65.64 511.32 65.64z m0 0" p-id="2388"></path><path d="M494.09 702.68a45 45 0 0 1-31.44-12.81L316.36 547a45 45 0 1 1 62.88-64.38l112.47 109.84 191.41-216.32a45 45 0 1 1 67.4 59.63L527.79 687.5a45 45 0 0 1-32.06 15.15z" p-id="2389"></path></svg>
+            `;
 
-    // 将删除图标添加到删除按钮中
-    deleteButton.appendChild(deleteIcon);
+                // 将删除图标添加到删除按钮中
+                deleteButton.appendChild(deleteIcon);
 
-    // 将 todo 名称和删除按钮添加到第一行元素中
-    firstLine.appendChild(todoNameText);
-    firstLine.appendChild(deleteButton);
+                // 将 todo 名称和删除按钮添加到第一行元素中
+                firstLine.appendChild(todoNameText);
+                firstLine.appendChild(deleteButton);
 
                 const progressContainer = document.createElement('div');
                 progressContainer.classList.add('progress-container');
@@ -217,7 +239,30 @@ const CalendarPage = () => {
                 todoElement.appendChild(progressContainer);
 
                 modalTodos.appendChild(todoElement);
-            });          
+            });       
+            
+            // meetings
+            dayMeetings.forEach((meeting, index) => {
+                const MeetingElement = document.createElement('div');
+                MeetingElement.classList.add('meeting');
+                // title
+                const titleElement = document.createElement('div');
+                titleElement.textContent = meeting.title;
+                titleElement.style.textAlign = 'left';
+                titleElement.style.flexGrow = '1';
+                // status
+                const statusElement = document.createElement('div');
+                statusElement.classList.add('meeting-status');
+                statusElement.style.textAlign = 'left';
+                statusElement.style.marginTop = '6px';
+                statusElement.style.marginBottom = '6px';
+                ReactDOM.render(<MeetingStatus status={meeting.status} />, statusElement);
+
+                MeetingElement.appendChild(titleElement);
+                MeetingElement.appendChild(statusElement);
+
+                modalTodos.appendChild(MeetingElement);
+            });
         }
     };
 
@@ -256,13 +301,13 @@ const CalendarPage = () => {
                     value={newTodo.title}
                     onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
                     placeholder="Todo Title"
-                    className="peer flex-grow-1 h-12 w-full block rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                    className="peer h-12 block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
                 />
                 <input
                     type="date"
                     value={newTodo.date}
                     onChange={(e) => setNewTodo({ ...newTodo, date: e.target.value })}
-                    className="peer flex-grow-1 h-12 w-full block rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                    className="peer h-12 block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
                 />
                 <AddEventButton onClick={handleAddTodo} />
             </div>

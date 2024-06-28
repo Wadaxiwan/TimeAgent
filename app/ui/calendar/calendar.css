@@ -17,7 +17,7 @@
     text-align: center;
     position: relative;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     min-height: 10vh; /* 最小高度 */
     flex: 1 1 calc(14.28% - 10px); /* 每个日期框占一列并适应父容器宽度 */
     display: flex;
@@ -25,10 +25,13 @@
     justify-content: flex-start;
     align-items: center;
     box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .todo {
-    background-color: rgba(224, 242, 254, 0.7);
+    background-color: rgb(224, 242, 254);
     color: #333;
     padding: 5px;
     margin: 2px 0;
@@ -40,7 +43,21 @@
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-.modal-content .todo {
+.meeting {
+    background-color: rgba(93, 190, 138, 0.3);
+    color: #333;
+    padding: 5px;
+    margin: 2px 0;
+    border-radius: 5px;
+    width: 100%; /* 确保待办事项占据整个日期框宽度 */
+    box-sizing: border-box;
+    flex-direction: column; /* 设置为纵向布局 */
+    align-items: flex-start; /* 左对齐 */
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.modal-content .todo,
+.modal-content .meeting {
     /* display: flex; */
     /* justify-content: space-between;*/
     /* align-items: left; */

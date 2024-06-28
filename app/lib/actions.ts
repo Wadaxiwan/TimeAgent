@@ -6,10 +6,11 @@ import { redirect } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs/promises';
-import { Meeting } from './definitions';
+import { Meeting, Meeting_Todo } from './definitions';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 const { exec } = require('child_process');
+import { Todo } from './definitions';
 
 export type State = {
   errors?: {
@@ -188,13 +189,6 @@ export async function fetchContent(meeting_id: string, type: string) {
   }
 }
 
-export interface Todo {
-  todo_id: string; // 假设你的待办事项有一个唯一的 ID
-  title: string;
-  date: string;
-  progress?: number;
-}
-
 export async function fetchTodos(){
   try {
     const data = await sql<Todo>`
@@ -213,6 +207,22 @@ export async function fetchTodos(){
   }
 }
 
+export async function fetchMeetingsAsTodos(){
+  try {
+    const data = await sql<Meeting_Todo>`
+      SELECT
+        meeting_id,
+        title,
+        date,
+        status
+      FROM meetings
+      `;      
+      return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch meetings.');
+  } 
+}
 
 export async function createOrUpdateTodo(todo: any) {
   try{

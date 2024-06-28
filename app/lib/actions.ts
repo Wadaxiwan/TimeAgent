@@ -384,7 +384,7 @@ export async function fetchContent(id: string, type: string) {
   }
 }
 
-export async function fetchTodos(){
+export async function fetchTodos(user_id: string) {
   try {
     const data = await sql<Todo>`
       SELECT
@@ -394,6 +394,7 @@ export async function fetchTodos(){
         end_date,
         progress
       FROM todos
+      WHERE user_id = ${user_id}
       ORDER BY start_date
     `;
     return data.rows;
@@ -403,7 +404,7 @@ export async function fetchTodos(){
   }
 }
 
-export async function fetchMeetingsAsTodos(){
+export async function fetchMeetingsAsTodos(user_id: string){
   try {
     const data = await sql<Meeting_Todo>`
       SELECT
@@ -411,7 +412,8 @@ export async function fetchMeetingsAsTodos(){
         title,
         date,
         status
-      FROM meetings
+        FROM meetings
+        WHERE user_id = ${user_id}
       `;      
       return data.rows;
   } catch (error) {
@@ -420,7 +422,7 @@ export async function fetchMeetingsAsTodos(){
   } 
 }
 
-export async function createOrUpdateTodo(todo: any) {
+export async function createOrUpdateTodo(todo: any, user_id: string) {
   try{
     if (todo.todo_id) {
       // 如果传入的 todo 包含 todo_id，则执行更新操作
@@ -440,7 +442,6 @@ export async function createOrUpdateTodo(todo: any) {
     } else {
       // 否则执行插入操作
       const todo_id = uuidv4();
-      const user_id = '410544b2-4001-4271-9855-fec4b6a6442a';
       await sql`
         INSERT INTO todos (todo_id, user_id, title, start_date, end_date, progress)
         VALUES (${todo_id}, ${user_id}, ${todo.title}, ${todo.start_date}, ${todo.end_date}, ${todo.progress ?? 0})

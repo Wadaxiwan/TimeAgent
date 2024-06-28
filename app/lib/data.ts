@@ -19,24 +19,25 @@ import { fetchContent } from './actions';
 import { format } from 'date-fns';
 import { DataFetcher } from './data_base';
 
-export async function fetchCardData() {
+export async function fetchCardData(user_id: string) {
   noStore();
   try {
-    // const totalTodoListsPromise = db.query('SELECT COUNT(*) AS count FROM todo_lists');
-    const scheduledMeetingsPromise = sql`SELECT COUNT(*) AS count FROM meetings WHERE status = 'scheduled'`;
-    const summariedMeetingsPromise = sql`SELECT COUNT(*) AS count FROM meetings WHERE status = 'summary'`;
-    const totalMeetingsPromise = sql`SELECT COUNT(*) AS count FROM meetings`;
+    const totalTodoListsPromise = sql`SELECT COUNT(*) FROM todos WHERE user_id=${user_id}`;
+    const scheduledMeetingsPromise = sql`SELECT COUNT(*) FROM meetings WHERE user_id=${user_id} AND status='scheduled'`;
+    const summariedMeetingsPromise = sql`SELECT COUNT(*) FROM meetings WHERE user_id=${user_id} AND status='summary'`;
+    const totalMeetingsPromise = sql`SELECT COUNT(*) FROM meetings WHERE user_id=${user_id}`;
 
     const data = await Promise.all([
+      totalTodoListsPromise,
       scheduledMeetingsPromise,
       summariedMeetingsPromise,
       totalMeetingsPromise,
     ]);
 
-    const totalTodoLists = Number('0');
-    const scheduledMeetings = Number(data[0].rows[0].count ?? '0');
-    const summariedMeetings = Number(data[1].rows[0].count ?? '0');
-    const totalMeetings = Number(data[2].rows[0].count ?? '0');
+    const totalTodoLists = Number(data[0].rows[0].count ?? '0');
+    const scheduledMeetings = Number(data[1].rows[0].count ?? '0');
+    const summariedMeetings = Number(data[2].rows[0].count ?? '0');
+    const totalMeetings = Number(data[3].rows[0].count ?? '0');
 
     return {
       totalTodoLists,
@@ -67,16 +68,16 @@ class DocumentFetcher extends DataFetcher<Document> {
 const meetingFetcher = new MeetingFetcher();
 const documentFetcher = new DocumentFetcher();
 
-export async function fetchMeetingById(meeting_id: string) {
-  return await meetingFetcher.fetchById(meeting_id);
+export async function fetchMeetingById(meeting_id: string, user_id: string) {
+  return await meetingFetcher.fetchById(meeting_id, user_id);
 }
 
-export async function fetchDocumentById(document_id: string) {
-  return await documentFetcher.fetchById(document_id);
+export async function fetchDocumentById(document_id: string, user_id: string) {
+  return await documentFetcher.fetchById(document_id, user_id);
 }
 
-export async function fetchFilteredMeetings(query: string, currentPage: number) {
-  const data = await meetingFetcher.fetchFiltered(query, currentPage, ITEMS_PER_PAGE);
+export async function fetchFilteredMeetings(query: string, currentPage: number, user_id: string) {
+  const data = await meetingFetcher.fetchFiltered(query, currentPage, ITEMS_PER_PAGE, user_id);
 
   const summaries = await Promise.all(
     data.map(async (row: any) => {
@@ -100,16 +101,17 @@ export async function fetchFilteredMeetings(query: string, currentPage: number) 
   return data;
 }
 
-export async function fetchMeetingsPages(query: string) {
-  return await meetingFetcher.fetchTotalPages(query, ITEMS_PER_PAGE);
+export async function fetchMeetingsPages(query: string, user_id:string) {
+  return await meetingFetcher.fetchTotalPages(query, ITEMS_PER_PAGE, user_id);
 }
 
-export async function fetchMeetings() {
-  return await meetingFetcher.fetchAll();
+
+export async function fetchMeetings(user_id: string) {
+  return await meetingFetcher.fetchAll(user_id);
 }
 
-export async function fetchFilteredDocuments(query: string, currentPage: number) {
-  const data = await documentFetcher.fetchFiltered(query, currentPage, ITEMS_PER_PAGE);
+export async function fetchFilteredDocuments(query: string, currentPage: number, user_id:string) {
+  const data = await documentFetcher.fetchFiltered(query, currentPage, ITEMS_PER_PAGE, user_id);
 
   const enhancedData = await Promise.all(
     data.map(async (row: any) => {
@@ -149,15 +151,15 @@ export async function fetchFilteredDocuments(query: string, currentPage: number)
   return enhancedData;
 }
 
-export async function fetchDocumentsPages(query: string) {
-  return await documentFetcher.fetchTotalPages(query, ITEMS_PER_PAGE);
+export async function fetchDocumentsPages(query: string, user_id:string) {
+  return await documentFetcher.fetchTotalPages(query, ITEMS_PER_PAGE, user_id);
 }
 
-export async function fetchDocuments() {
-  return await documentFetcher.fetchAll();
+export async function fetchDocuments(user_id: string) {
+  return await documentFetcher.fetchAll(user_id);
 }
 
-export async function getUser(email: string) {
+export async function getAllUser(email: string) {
   try {
     const user = await sql`SELECT * FROM users WHERE email=${email}`;
     return user.rows;

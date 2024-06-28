@@ -8,7 +8,7 @@ import { useFormState } from 'react-dom';
 import { useState } from 'react';
 
 
-export default function Form({ users }: { users: User[] }) {
+export default function Form({ users, user }: { users: User[], user: any}) {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createDoc, initialState);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,11 +48,9 @@ export default function Form({ users }: { users: User[] }) {
               <option value="" disabled>
                 Select a user
               </option>
-              {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
                 </option>
-              ))}
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>

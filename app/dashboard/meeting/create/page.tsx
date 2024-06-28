@@ -2,7 +2,7 @@ import Form from '@/app/ui/meeting/create-form';
 import Breadcrumbs from '@/app/ui/meeting/breadcrumbs';
 import { fetchFilteredUsers } from '@/app/lib/data';
 import { MetaData } from '@lobehub/ui';
-
+import { auth } from "@/auth"
 
 export const metadata: MetaData = {
   title: 'Create Meeting',
@@ -12,7 +12,10 @@ export const metadata: MetaData = {
 export default async function Page() {
 
   const users = await fetchFilteredUsers('');
- 
+  const session = await auth();
+
+  if (!session.user) return null
+   
   return (
     <main>
       <Breadcrumbs
@@ -25,7 +28,7 @@ export default async function Page() {
           },
         ]}
       />
-      <Form users={users} />
+      <Form users={users} user={session.user}/>
     </main>
   );
 }

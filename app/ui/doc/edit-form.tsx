@@ -21,9 +21,11 @@ import { UpdateDoc } from './buttons';
 export default function EditDocForm({
   document,
   users,
+  user
 }: {
   document: Documents;
   users: User[];
+  user: User;
 }) {
   const updateDocWithId = updateDocument.bind(null, document.document_id);
   const [content, setContent] = useState('');
@@ -120,11 +122,9 @@ export default function EditDocForm({
               <option value="" disabled>
                 Select a user
               </option>
-              {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
                 </option>
-              ))}
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>

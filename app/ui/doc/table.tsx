@@ -4,6 +4,7 @@ import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
 import { fetchFilteredDocuments } from '@/app/lib/data';
 import { format } from 'date-fns';
 import { Documents } from '@/app/lib/definitions';
+import { auth } from '@/auth';
 
 
 export default async function DocsTable({
@@ -13,7 +14,12 @@ export default async function DocsTable({
   query: string;
   currentPage: number;
 }) {
-  const documents = await fetchFilteredDocuments(query, currentPage);
+  const session = await auth();
+  if(!session){
+    return;
+  }
+  const user_id = session.user.id;
+  const documents = await fetchFilteredDocuments(query, currentPage, user_id);
   console.log('documents:', documents);
   if(documents === null){
       return;
@@ -39,10 +45,7 @@ export default async function DocsTable({
           <table className="hidden min-w-full text-gray-900 md:table">
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
-                {/* <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Title
-                </th> */}
-                <th scope="col" className="px-3 py-5 font-medium">
+                <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                   Title
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
@@ -59,15 +62,10 @@ export default async function DocsTable({
                   key={document.document_id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
-                  {/* <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <p className="truncate text-sm font-semibold md:text-base">
-                      {meeting.title}
+                      {document.title}
                     </p>
-                  </td> */}
-                  <td className="whitespace-nowrap px-3 py-3">
-                  <p className="truncate text-sm font-semibold md:text-base">
-                    {document.title}
-                  </p>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {document.document_summary_content}

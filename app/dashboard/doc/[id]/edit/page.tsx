@@ -3,6 +3,7 @@ import Breadcrumbs from '@/app/ui/meeting/breadcrumbs';
 import { fetchFilteredUsers, fetchDocumentById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { MetaData } from '@lobehub/ui';
+import { auth } from '@/auth';
 
 
 export const metadata: MetaData = {
@@ -11,8 +12,12 @@ export const metadata: MetaData = {
  
 export default async function Page({ params }: { params: { id: string } }) {
     const document_id = params.id;  
+    const session = await auth();
+    if(!session){
+      return;
+    }
     const [document, users] = await Promise.all([
-        fetchDocumentById(document_id),
+        fetchDocumentById(document_id, session.user.id),
         fetchFilteredUsers(''),
     ]);
     if (!document) {
@@ -30,7 +35,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <Form document={document} users={users} />
+      <Form document={document} users={users} user={session.user}/>
     </main>
   );
 }

@@ -2,9 +2,9 @@
 // https://nextjs.org/learn/dashboard-app/fetching-data
 const users = [
   {
-    id: '410544b2-4001-4271-9855-fec4b6a6442a',
-    name: 'Wadaxiwan',
-    email: '2021113666@stu.hit.edu.cn',
+    id: 'edfb5480-3aaf-4cb5-a6ac-ed31e43a3ba6',
+    name: 'YundanChen',
+    email: '2021113667@stu.hit.edu.cn',
     password: '123456',
   },
 ];

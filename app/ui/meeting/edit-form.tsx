@@ -19,9 +19,11 @@ import fs from 'fs/promises';
 export default function EditMeetingForm({
   meeting,
   users,
+  user
 }: {
   meeting: Meeting;
   users: User[];
+  user:User;
 }) {
   const updateMeetingWithId = updateMeeting.bind(null, meeting.meeting_id);
   const [content, setContent] = useState('');
@@ -88,11 +90,9 @@ export default function EditMeetingForm({
               <option value="" disabled>
                 Select a user
               </option>
-              {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
                 </option>
-              ))}
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>

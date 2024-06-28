@@ -7,9 +7,10 @@ import { createMeeting } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 
 
-export default function Form({ users }: { users: User[] }) {
+export default function Form({ users, user }: { users: User[], user: any }) {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createMeeting, initialState);
+  console.log("Inner", user);
   return (
     <form action={dispatch}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
@@ -29,11 +30,9 @@ export default function Form({ users }: { users: User[] }) {
               <option value="" disabled>
                 Select a user
               </option>
-              {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
                 </option>
-              ))}
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>

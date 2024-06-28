@@ -7,6 +7,7 @@ import { MeetingsTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchMeetingsPages } from '@/app/lib/data';
 import { MetaData } from '@lobehub/ui';
+import { auth } from '@/auth';
 
 
 export const metadata: MetaData = {
@@ -23,7 +24,12 @@ export default async function Page({
   })  {
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
-    const totalPages = await fetchMeetingsPages(query);
+    const session = await auth();
+    if(!session){
+      return;
+    }
+    const user_id = session.user.id;
+    const totalPages = await fetchMeetingsPages(query, user_id);
 
   return (
     <div className="w-full">

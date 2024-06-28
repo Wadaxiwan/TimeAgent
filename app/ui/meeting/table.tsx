@@ -4,6 +4,7 @@ import MeetingStatus from '@/app/ui/meeting/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
 import { fetchFilteredMeetings } from '@/app/lib/data';
 import { format } from 'date-fns';
+import { auth } from '@/auth';
 
 
 export default async function MeetingsTable({
@@ -13,7 +14,8 @@ export default async function MeetingsTable({
   query: string;
   currentPage: number;
 }) {
-  const meetings = await fetchFilteredMeetings(query, currentPage);
+  const session = await auth();
+  const meetings = await fetchFilteredMeetings(query, currentPage, session?.user?.id);
 
   return (
     <div className="mt-6 flow-root">

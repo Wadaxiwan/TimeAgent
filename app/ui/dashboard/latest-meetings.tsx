@@ -4,6 +4,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { Meeting } from '@/app/lib/definitions';
 import { format } from 'date-fns';
 import {fetchMeetings} from '@/app/lib/data';
+import { auth } from '@/auth';
 
 const statusColorMap: { [key: string]: string } = {
   scheduled: 'bg-blue-500',
@@ -18,7 +19,12 @@ const statusTextMap: { [key: string]: string } = {
 };
 
 export default async function Meetings() {
-  const meetings = await fetchMeetings();
+  const session = await auth();
+  if(!session){
+    return;
+  }
+  const user_id = session.user.id;
+  const meetings = await fetchMeetings(user_id);
   return (
     <div className="flex w-full flex-col md:col-span-4">
       <h2 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>

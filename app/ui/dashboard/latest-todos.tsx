@@ -5,6 +5,7 @@ import { Meeting } from '@/app/lib/definitions';
 import { format } from 'date-fns';
 import {fetchMeetings} from '@/app/lib/data';
 import { auth } from '@/auth';
+import { fetchTodos } from '@/app/lib/actions';
 
 const statusColorMap: { [key: string]: string } = {
   scheduled: 'bg-blue-500',
@@ -24,7 +25,7 @@ export default async function Meetings() {
     return;
   }
   const user_id = session.user.id;
-  const meetings = await fetchMeetings(user_id);
+  const todos = await fetchTodos(user_id);
   return (
     <div className="flex w-full flex-col md:col-span-4">
       <h2 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
@@ -32,9 +33,9 @@ export default async function Meetings() {
       </h2>
       <div className="flex grow flex-col justify-between rounded-xl bg-gray-50 p-4">
         <div className="bg-white px-6">
-          {meetings.slice(0, 5).map((meeting, i) => (
+          {todos.slice(0, 5).map((todo, i) => (
             <div
-              key={meeting.id}
+              key={todo.title}
               className={clsx(
                 'flex flex-row items-center justify-between py-4',
                 {
@@ -44,22 +45,12 @@ export default async function Meetings() {
             >
               <div className="flex flex-col">
                 <p className="truncate text-sm font-semibold md:text-base">
-                  {meeting.title}
+                  {todo.title}
                 </p>
               </div>
               <div className="flex flex-row items-center space-x-4">
-                <div className="flex items-center">
-                  <span
-                    className={clsx(
-                      'inline-block w-2.5 h-2.5 rounded-full',
-                      statusColorMap[meeting.status],
-                      'mr-2'
-                    )}
-                  ></span>
-                  <p className="ml-2 text-sm text-gray-500">{statusTextMap[meeting.status]}</p>
-                </div>
                 <p className="text-sm text-gray-500">
-                  {format(new Date(meeting.date), 'yyyy-MM-dd HH:mm')}
+                  {format(new Date(todo.start_date), 'yyyy-MM-dd HH:mm')}
                 </p>
               </div>
             </div>

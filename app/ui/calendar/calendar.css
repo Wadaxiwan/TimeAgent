@@ -1,0 +1,228 @@
+.calendar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.calendar-row {
+    display: flex;
+    width: 100%;
+  }
+
+.calendar-day {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    min-height: 10vh; /* 最小高度 */
+    flex: 1 1 calc(14.28% - 10px); /* 每个日期框占一列并适应父容器宽度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.todo {
+    background-color: rgb(224, 242, 254);
+    color: #333;
+    padding: 5px;
+    margin: 2px 0;
+    border-radius: 5px;
+    width: 100%; /* 确保待办事项占据整个日期框宽度 */
+    box-sizing: border-box;
+    flex-direction: column; /* 设置为纵向布局 */
+    align-items: flex-start; /* 左对齐 */
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.meeting {
+    background-color: rgba(93, 190, 138, 0.3);
+    color: #333;
+    padding: 5px;
+    margin: 2px 0;
+    border-radius: 5px;
+    width: 100%; /* 确保待办事项占据整个日期框宽度 */
+    box-sizing: border-box;
+    flex-direction: column; /* 设置为纵向布局 */
+    align-items: flex-start; /* 左对齐 */
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.modal-content .todo,
+.modal-content .meeting {
+    /* display: flex; */
+    /* justify-content: space-between;*/
+    /* align-items: left; */
+    padding: 10px 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.calendar-page {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.calendar-header {
+    text-align: center;
+    font-weight: bold;
+    flex: 1 1 calc(14.28% - 10px);
+    box-sizing: border-box;
+}
+
+.event {
+    background-color: #deeefa;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    margin: 5px 0 0 0;
+}
+
+/* .event-form {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+}*/
+
+.input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 40%;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.modal label {
+    display: block;
+    margin-top: 10px;
+}
+
+.modal input {
+    width: calc(100% - 20px);
+    padding: 10px;
+}
+
+.modal-content .event {
+    background-color: #faf7de;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    margin: 5px 0;
+    border-radius: 4px;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* .event button {
+    background-color: #f25a47;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 5px;
+    cursor: pointer;
+}
+
+.event button:hover {
+    background-color: #c82333;
+} */
+
+
+.controls-container {
+    display: flex;
+    align-items: center;
+    margin-top: 0px; /* 进度条和按钮之间的间距 */
+  }
+
+.progress-container {
+    display: flex;
+    margin: 10px 3px 0 3px;
+    font-weight: normal;
+}
+
+.progress-bar {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 60%;
+    height: 5px; /* 设置进度条的高度 */
+    border-radius: 12px; /* 设置边框的圆角 */
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgb(224, 242, 254);
+    outline: none;    /* 去除默认的轮廓 */
+  }
+  
+  .progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; /* 拇指的宽度 */
+    height: 16px; /* 拇指的高度 */
+    border-radius: 50%; /* 拇指的圆角 */
+    background-color: #2f6feb; /* 拇指的背景颜色 */
+    cursor: pointer; /* 鼠标悬停时显示指针 */
+  }
+  
+  .done-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #ee3f4d; /* 按钮文字颜色 */
+    margin-left: 10px; /* 按钮与进度条之间的间距 */
+  }

@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const {
   meetings,
   users,
+  todos
 } = require('../app/lib/placeholder-data.js');
 
 async function seedUsers(client) {
@@ -40,6 +41,48 @@ async function seedUsers(client) {
     };
   } catch (error) {
     console.error('Error seeding users:', error);
+    throw error;
+  }
+}
+
+async function seedTodos(client) {
+  try {
+    // 删除旧表 todos
+    await client.sql`DROP TABLE IF EXISTS todos`;
+
+    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    const createTable = await client.sql`
+    
+    CREATE TABLE IF NOT EXISTS todos (
+      todo_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      user_id UUID NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      start_date TIMESTAMP NOT NULL,
+      end_date TIMESTAMP NOT NULL,
+      progress INT DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )`;
+    console.log(`Created "todos" table`);
+
+    const insertedTodos = await Promise.all(
+      todos.map((todo) => {
+        todo.todo_id = uuidv4();
+        return client.sql`
+          INSERT INTO todos (todo_id, user_id, title, start_date, end_date, progress)
+          VALUES (${todo.todo_id}, ${todo.user_id}, ${todo.title}, ${todo.start_date}, ${todo.end_date}, ${todo.progress})
+          ON CONFLICT (todo_id) DO NOTHING;
+          `;         
+      }),
+    );
+
+    console.log(`Seeded ${insertedTodos.length} todos`);
+
+    return {
+      createTable,
+      todos: insertedTodos,
+    };
+  } catch (error) {
+    console.error('Error seeding todos:', error);
     throw error;
   }
 }
@@ -122,6 +165,7 @@ async function main() {
   const client = await db.connect();
   
   await seedUsers(client);
+  // await seedTodos(client);
   // await seedMeetings(client);
   // await seedDocuments(client);
 

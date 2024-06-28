@@ -38,6 +38,8 @@
     "pg-promise": "^11.8.0",
     "postcss": "8.4.31",
     "react": "18.2.0",
+    "react-big-calendar": "^1.12.2",
+    "react-calendar": "^5.0.0",
     "react-dom": "18.2.0",
     "react-modal": "^3.16.1",
     "tailwind-merge": "^2.3.0",
@@ -52,6 +54,9 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.1",
     "@types/react": "18.2.21",
+    "@types/react-big-calendar": "^1.8.9",
+    "@types/react-calendar": "^4.1.0",
+    "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "18.2.14",
     "@types/uuid": "^9.0.8",
     "@vercel/style-guide": "^5.0.1",

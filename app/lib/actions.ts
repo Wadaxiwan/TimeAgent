@@ -6,10 +6,11 @@ import { redirect } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs/promises';
-import { Documents, Meeting } from './definitions';
+import { Documents, Meeting, Meeting_Todo } from './definitions';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 const { exec } = require('child_process');
+import { Todo } from './definitions';
 
 export type State = {
   errors?: {
@@ -383,31 +384,87 @@ export async function fetchContent(id: string, type: string) {
   }
 }
 
-export async function fetchTodos() {
-  const rows = sql`SELECT * FROM todos ORDER BY date, priority`;
-  return rows;
-}
-
-export async function createOrUpdateTodo(todo: any) {
-  if (todo.id) {
-    sql`
-      UPDATE todos
-      SET title = ${todo.title}, date = ${todo.date}, details = ${todo.details}, priority = ${todo.priority}
-      WHERE id = ${todo.id}
-    `;  
-  } else {
-    const id = uuidv4();
-    sql`
-      INSERT INTO todos (id, title, date, details, priority)
-      VALUES (${id}, ${todo.title}, ${todo.date}, ${todo.details}, ${todo.priority})
+export async function fetchTodos(){
+  try {
+    const data = await sql<Todo>`
+      SELECT
+        todo_id,
+        title,
+        start_date,
+        end_date,
+        progress
+      FROM todos
+      ORDER BY start_date
     `;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch todos.');
   }
 }
 
-export async function deleteTodo(id: any) {
+export async function fetchMeetingsAsTodos(){
+  try {
+    const data = await sql<Meeting_Todo>`
+      SELECT
+        meeting_id,
+        title,
+        date,
+        status
+      FROM meetings
+      `;      
+      return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch meetings.');
+  } 
+}
+
+export async function createOrUpdateTodo(todo: any) {
+  try{
+    if (todo.todo_id) {
+      // 如果传入的 todo 包含 todo_id，则执行更新操作
+      await sql`
+        UPDATE todos
+        SET title = ${todo.title}, start_date = ${todo.start_date}, end_date = ${todo.end_date}, progress = ${todo.progress}
+        WHERE todo_id = ${todo.todo_id}
+      `;
+      const newTodo: Todo[] = [{
+        todo_id: todo.todo_id,
+        title: todo.title,
+        start_date: todo.start_date,
+        end_date: todo.end_date,
+        progress: todo.progress ?? 0,
+      }];
+      return newTodo;
+    } else {
+      // 否则执行插入操作
+      const todo_id = uuidv4();
+      const user_id = '410544b2-4001-4271-9855-fec4b6a6442a';
+      await sql`
+        INSERT INTO todos (todo_id, user_id, title, start_date, end_date, progress)
+        VALUES (${todo_id}, ${user_id}, ${todo.title}, ${todo.start_date}, ${todo.end_date}, ${todo.progress ?? 0})
+      `;
+      const newTodo: Todo[] = [{
+        todo_id: todo_id,
+        title: todo.title,
+        start_date: todo.start_date,
+        end_date: todo.end_date,
+        progress: todo.progress ?? 0,
+      }];
+      return newTodo;
+    }
+  }
+  catch (error) {
+    console.error('Database Error:', error);
+    throw ('createOrUpdateTodo:' + error);
+  }
+}
+
+export async function deleteTodo(todo_id: any) {
   sql`
     DELETE FROM todos
-    WHERE id = ${id}
+    WHERE todo_id = ${todo_id}
   `;
 }
 

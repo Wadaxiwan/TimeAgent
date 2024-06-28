@@ -5,7 +5,7 @@ import { CheckIcon, ClockIcon, CalendarIcon, UserCircleIcon, InboxIcon, PaperAir
 import { Button } from '@/app/ui/button';
 import { createMeeting } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
-
+import CalendarSkeleton from '@/app/ui/calendar/skeletons';
 
 export default function Form({ users, user }: { users: User[], user: any }) {
   const initialState = { message: null, errors: {} };
@@ -94,7 +94,7 @@ export default function Form({ users, user }: { users: User[], user: any }) {
                 {error}
               </p>
             ))}
-        </div>
+          </div>
         </div>
 
         {/* Meeting Status */}

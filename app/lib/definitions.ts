@@ -13,6 +13,20 @@ export type Meeting = {
   meeting_summary_content: string;
 }
 
+export type Todo = {
+  todo_id: string; // 假设你的待办事项有一个唯一的 ID
+  title: string;
+  start_date: string;
+  end_date: string;
+  progress?: number;
+}
+
+export type Meeting_Todo = {
+  meeting_id: string;
+  title: string;
+  date: string;
+  status: 'scheduled' | 'completed' | 'summary';
+}
 
 export type Documents = {
   user_id: string;

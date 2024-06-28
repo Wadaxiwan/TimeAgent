@@ -22,7 +22,8 @@ text =[
     # {"role": "assistant", "content": "....."} , # AI的历史回答结果
     # # ....... 省略的历史对话
     # {"role": "user", "content": "你会做什么"}  # 最新的一条问题，如无需上下文，可只传最新一条问题
-    {"role":"system","content":"你是一名会议纪要员，负责对输入的文本进行文本总结"}
+    # {"role":"system","content":"你是一名会议纪要员，负责对输入的文本进行文本总结"}
+    {"role":"system","content":"你是一名助理员，负责对输入的文本进行文本总结（输入可能是会议内容或者文档，请自行判断然后输出合适结果）或者根据输入的描述来生成内容"}
 ]
 
 
@@ -66,15 +67,19 @@ if __name__ == '__main__':
 
     in_path = args.in_path
     out_path = args.out_path
-    with open(in_path,'r',encoding='utf-8') as f:
-        content = f.read()
-        question = checklen(getText("user",content))
-        SparkApi.answer = ""
-        SparkApi.main(appid,api_key,api_secret,Spark_url,domain,question)
-        with open(out_path,'w') as ff:
-            ff.write(SparkApi.answer)
-            getText("assistant", SparkApi.answer)
-
+    try:
+        print("Input file path:", in_path)
+        with open(in_path,'r',encoding='utf-8') as f:
+            content = f.read()
+            question = checklen(getText("user",content))
+            SparkApi.answer = ""
+            SparkApi.main(appid,api_key,api_secret,Spark_url,domain,question)
+            with open(out_path,'w',encoding='utf-8') as ff:
+                ff.write(SparkApi.answer)
+                print("Answer:", SparkApi.answer)
+                getText("assistant", SparkApi.answer)
+    except Exception as e:
+        print(e)
 
 
 

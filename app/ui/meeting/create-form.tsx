@@ -161,8 +161,16 @@ export default function Form({ users }: { users: User[] }) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create Meeting</Button>
-      </div>
-    </form>
-  );
-}
+        <Button type="submit" 
+                className="h-10 px-4 rounded-lg text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={state.message === 'Creating meeting'}>
+            {state.message || 'Create Meeting'}
+          </Button>
+        </div>
+      </form>
+    );
+  }
+  
+  function isEmpty(obj: any) {
+    return Object.keys(obj).length === 0;
+  }

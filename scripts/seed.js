@@ -83,13 +83,47 @@ async function seedMeetings(client) {
   }
 }
 
+async function seedDocuments(client) {
+
+  // 删除 Document
+  try {
+    await client.sql`DROP TABLE IF EXISTS documents`;
+    console.log(`Dropped "documents" table`);
+  } catch (error) {
+    console.error('Error dropping documents:', error);
+    throw error;
+  }
+  try {
+    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    const createTable = await client.sql`
+    CREATE TABLE IF NOT EXISTS documents (
+      document_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      user_id UUID NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      document_content VARCHAR(255),
+      document_summary VARCHAR(255),
+      document_correction VARCHAR(255),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )`;
+    console.log(`Created "documents" table`);
+    return {
+      createTable,
+    };
+  } catch (error) {
+    console.error('Error seeding meetings:', error);
+    throw error;
+  }
+}
+
+
 
 async function main() {
 
   const client = await db.connect();
   
   // await seedUsers(client);
-  await seedMeetings(client);
+  // await seedMeetings(client);
+  await seedDocuments(client);
 
   await client.end();
 }

@@ -1,6 +1,6 @@
 'use client';
-import { updateMeeting, generateSummary, fetchContent } from '@/app/lib/actions';
-import { User, Meeting } from '@/app/lib/definitions';
+import { updateDocument, generateSummary, fetchContent ,getCorrectionAdvice} from '@/app/lib/actions';
+import { User, Meeting, Documents } from '@/app/lib/definitions';
 import {
   CheckIcon,
   ClockIcon,
@@ -14,27 +14,32 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import path from 'path';
 import fs from 'fs/promises';
+import DisplayJson from './displayJSON';
+import { UpdateDoc } from './buttons';
 
 
-export default function EditMeetingForm({
-  meeting,
+export default function EditDocForm({
+  document,
   users,
 }: {
-  meeting: Meeting;
+  document: Documents;
   users: User[];
 }) {
-  const updateMeetingWithId = updateMeeting.bind(null, meeting.meeting_id);
+  const updateDocWithId = updateDocument.bind(null, document.document_id);
   const [content, setContent] = useState('');
   const [summary, setSummary] = useState('');
-  const formattedDate = format(new Date(meeting.date), 'yyyy-MM-dd HH:mm:ss');
+  const [correction, setCorrection] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCorrecting, setIsCorrecting] = useState(false);
 
-  console.log('meeting:', meeting);
+  const [triggerReload, setTriggerReload] = useState(0); // 用于触发重新加载
+
+  console.log('document:', document);
   // judge the path is exist or notuseEffect(() => {
     useEffect(() => {
       async function loadContent() {
           try {
-            const data = await fetchContent(meeting.meeting_id, 'content');
+            const data = await fetchContent(document.document_id, 'doc_content');
             if (data.content) {
               setContent(data.content);
             }
@@ -45,7 +50,7 @@ export default function EditMeetingForm({
   
       async function loadSummary() {
         try {
-            const data = await fetchContent(meeting.meeting_id, 'summary');
+            const data = await fetchContent(document.document_id, 'doc_summary');
             if (data.content) {
               setSummary(data.content);
             }
@@ -53,15 +58,27 @@ export default function EditMeetingForm({
             console.error('Failed to fetch summary:', error);
           } 
         }
+
+        async function loadCorrection() {
+          try {
+              const data = await fetchContent(document.document_id, 'doc_correction');
+              if (data.content) {
+                setCorrection(data.content);
+              }
+            } catch (error) {
+              console.error('Failed to fetch correction advice:', error);
+            } 
+          }
   
       loadContent();
       loadSummary();
-    }, [meeting.meeting_content, meeting.meeting_id, meeting.meeting_summary]);
+      loadCorrection();
+    }, [document.document_content, document.document_id, document.document_summary]);
 
   const handleGenerateSummary = async () => {
     setIsGenerating(true);
     try {
-      const response = await generateSummary(content, meeting.meeting_id);
+      const response = await generateSummary(content, document.document_id);
       setSummary(response.summary);
     } catch (error) {
       console.error('Failed to generate summary:', error);
@@ -70,8 +87,23 @@ export default function EditMeetingForm({
     }
   };
 
+  const handleGenerateCorrection = async () => {
+    setIsCorrecting(true);
+    try {
+      const response = await getCorrectionAdvice(content, document.document_id);
+      setCorrection(response.summary);
+    } catch (error) {
+      console.error('Failed to generate correction advices:', error);
+    } finally {
+      setIsCorrecting(false);
+    }
+    // 触发重新加载
+    setTriggerReload(prev => prev + 1);
+  };
+
+
   return (
-    <form action={updateMeetingWithId}>
+    <form action={updateDocWithId}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* User Selection */}
         <div className="mb-4">
@@ -83,7 +115,7 @@ export default function EditMeetingForm({
               id="user"
               name="userId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue={meeting.user_id}
+              defaultValue={document.user_id}
             >
               <option value="" disabled>
                 Select a user
@@ -97,29 +129,28 @@ export default function EditMeetingForm({
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
         </div>
-
-        {/* Meeting Title */}
+        {/* Document Title */}
         <div className="mb-4">
           <label htmlFor="title" className="mb-2 block text-sm font-medium">
-            Meeting Title
+            Document title
           </label>
           <div className="relative">
             <input
               id="title"
               name="title"
               type="text"
-              defaultValue={meeting.title}
-              placeholder="Enter meeting title"
+              defaultValue={document.title}
+              placeholder="Enter document title"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
             />
             <ArchiveBoxArrowDownIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
         </div>
 
-        {/* Meeting Content */}
+        {/* /* Meeting Content */}
         <div className="mb-4">
           <label htmlFor="content" className="mb-2 block text-sm font-medium">
-            Meeting Content
+            Document Content
           </label>
           <div className="relative">
             <textarea
@@ -129,7 +160,7 @@ export default function EditMeetingForm({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Enter meeting content"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
-              rows={4}
+              rows={10}
             ></textarea>
           </div>
         </div>
@@ -144,7 +175,7 @@ export default function EditMeetingForm({
         {/* Meeting Summary */}
         <div className="mb-4">
           <label htmlFor="summary" className="mb-2 block text-sm font-medium">
-            Meeting Summary
+            Document Summary
           </label>
           <div className="relative">
             <textarea
@@ -152,97 +183,29 @@ export default function EditMeetingForm({
               name="summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Meeting summary will be generated here"
+              placeholder="Document summary will be generated here"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
-              rows={4}
+              rows={10}
             ></textarea>
           </div>
-        </div>
+        </div> 
 
-        {/* Meeting Date */}
+        {/* Document Correction Button */}
         <div className="mb-4">
-          <label htmlFor="date" className="mb-2 block text-sm font-medium">
-            Meeting Date
-          </label>
-          <div className="relative">
-            <input
-              id="date"
-              name="date"
-              type="datetime-local"
-              defaultValue={formattedDate}
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-            />
-            <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
+          <Button type="button" onClick={handleGenerateCorrection} disabled={isCorrecting}>
+            {isCorrecting ? 'Giving correction advice...' : 'Start Correction'}
+          </Button>
         </div>
-
-        {/* Meeting Status */}
-        <fieldset>
-          <legend className="mb-2 block text-sm font-medium">
-            Set the meeting status
-          </legend>
-          <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
-            <div className="flex gap-4">
-              <div className="flex items-center">
-                <input
-                  id="scheduled"
-                  name="status"
-                  type="radio"
-                  value="scheduled"
-                  defaultChecked={meeting.status === 'scheduled'}
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                />
-                <label
-                  htmlFor="scheduled"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-blue-500 px-3 py-1.5 text-xs font-medium text-white"
-                >
-                  Scheduled <ClockIcon className="h-4 w-4" />
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="completed"
-                  name="status"
-                  type="radio"
-                  value="completed"
-                  defaultChecked={meeting.status === 'completed'}
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                />
-                <label
-                  htmlFor="completed"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                >
-                  Completed <CheckIcon className="h-4 w-4" />
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="summary-status"
-                  name="status"
-                  type="radio"
-                  value="summary"
-                  defaultChecked={meeting.status === 'summary'}
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                />
-                <label
-                  htmlFor="summary-status"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-medium text-white"
-                >
-                  Summary <CheckIcon className="h-4 w-4" />
-                </label>
-              </div>
-            </div>
-          </div>
-        </fieldset>
+        <DisplayJson docID={document.document_id} triggerReload={triggerReload} />
       </div>
       <div className="mt-6 flex justify-end gap-4">
         <Link
-          href="/dashboard/meeting"
+          href="/dashboard/doc"
           className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
         >
           Cancel
         </Link>
-        <Button type="submit" disabled={isGenerating}>Edit Meeting</Button>
+        <Button type="submit" disabled={isGenerating}>Edit Document</Button>
       </div>
     </form>
   );

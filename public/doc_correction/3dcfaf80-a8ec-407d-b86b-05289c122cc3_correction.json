@@ -1,0 +1,25 @@
+{
+    "black_list": [],
+    "punc": [],
+    "leader": [],
+    "org": [],
+    "pol": [],
+    "grammar_pc": [],
+    "order": [],
+    "idm": [],
+    "word": [],
+    "char": [],
+    "redund": [
+        [
+            129,
+            "和",
+            "",
+            "redund"
+        ]
+    ],
+    "miss": [],
+    "dapei": [],
+    "number": [],
+    "addr": [],
+    "name": []
+}

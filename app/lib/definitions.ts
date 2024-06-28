@@ -14,12 +14,30 @@ export type Meeting = {
 }
 
 
+export type Documents = {
+  user_id: string;
+  document_id: string;
+  title: string;
+  document_content: string;
+  document_summary: string;
+  document_correction: string;
+  document_summary_content: string;
+  document_correction_content: string;
+}
+
 export type User = {
   id: string;
   name: string;
   email: string;
   password: string;
 };
+
+export type TODO = {
+  TODOid: string;
+  content: string;
+  date:string;
+  status: 'completed' | 'scheduled';
+}
 
 export type Customer = {
   id: string;

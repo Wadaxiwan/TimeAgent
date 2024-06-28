@@ -19,11 +19,11 @@ const links = [
     href: '/dashboard/meeting',
     icon: UserGroupIcon,
   },
-  // {
-  //   name: 'TodoLists',
-  //   href: '/dashboard/todolist',
-  //   icon: DocumentDuplicateIcon,
-  // }
+  {
+    name: 'Documents',
+    href: '/dashboard/doc',
+    icon: DocumentDuplicateIcon,
+  }
 ];
 
 export default function NavLinks() {

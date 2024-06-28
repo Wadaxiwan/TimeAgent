@@ -1,7 +1,7 @@
 import { Card } from '@/app/ui/dashboard/cards';
 import CardWrapper from '@/app/ui/dashboard/cards';
 import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+import Todos from '@/app/ui/dashboard/latest-todos';
 import Meetings from '../../ui/dashboard/latest-meetings';
 import { lusitana } from '@/app/ui/fonts';
 import { fetchCardData} from '@/app/lib/data';
@@ -22,6 +22,7 @@ export default async function Page() {
         {/* <Meetings meetings={meetings} /> */}
         <Suspense fallback={<MeetingsSkeleton />}>
           <Meetings/>
+          <Todos/>
         </Suspense>
       </div>
     </main>
